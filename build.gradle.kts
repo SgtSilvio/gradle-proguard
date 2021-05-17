@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.github.sgtsilvio.gradle"
-description = "Gradle plugin to ease using Proguard"
+description = "Gradle plugin to ease using ProGuard"
 
 repositories {
     mavenCentral()
@@ -15,7 +15,7 @@ gradlePlugin {
     plugins {
         create("proguard") {
             id = "$group.$name"
-            displayName = "Gradle Proguard plugin"
+            displayName = "Gradle ProGuard plugin"
             description = project.description
             implementationClass = "$group.proguard.ProguardPlugin"
         }
