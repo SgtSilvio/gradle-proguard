@@ -185,7 +185,6 @@ open class ProguardTask : JavaExec() {
     private data class JarEntry(val files: FileCollection, val type: String, val filter: String)
 
     private inner class ArgumentProvider : CommandLineArgumentProvider {
-        @Internal
         override fun asArguments(): Iterable<String> {
             val arguments = mutableListOf<String>()
             for (jarEntry in jarEntries) {
