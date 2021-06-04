@@ -47,6 +47,10 @@ val proguardJar by tasks.registering(proguard.taskClass) {
 }
 ```
 
+## Requirements
+
+- Gradle 6.4 or higher
+
 ## Configuration
 
 ### ProGuard Version

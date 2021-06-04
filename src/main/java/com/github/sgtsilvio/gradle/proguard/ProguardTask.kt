@@ -4,6 +4,7 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.tasks.*
 import org.gradle.kotlin.dsl.get
+import org.gradle.kotlin.dsl.listProperty
 import org.gradle.process.CommandLineArgumentProvider
 
 /**
@@ -30,7 +31,7 @@ import org.gradle.process.CommandLineArgumentProvider
  * @author Silvio Giebl
  */
 @CacheableTask
-open class ProguardTask : JavaExec() {
+abstract class ProguardTask : JavaExec() {
 
     /**
      * Combined list of input, library and output jars ordered by insertion.
@@ -58,8 +59,8 @@ open class ProguardTask : JavaExec() {
      *
      * The rules files must not contain file configuration parameters; these are declared here as inputs and outputs.
      */
-    @InputFiles
-    @PathSensitive(PathSensitivity.NONE)
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.NONE)
     val rulesFiles = objectFactory.fileCollection()
 
     /**
@@ -67,74 +68,74 @@ open class ProguardTask : JavaExec() {
      *
      * The rules must not contain file configuration parameters; these are declared here as inputs and outputs.
      */
-    @Input
-    val rules = objectFactory.listProperty(String::class.java)
+    @get:Input
+    val rules = objectFactory.listProperty(String::class)
 
     /**
      * Passed as `-applymapping` argument to ProGuard.
      */
-    @Optional
-    @InputFile
-    @PathSensitive(PathSensitivity.NONE)
+    @get:Optional
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
     val mappingInputFile = objectFactory.fileProperty()
 
     /**
      * Passed as `-obfuscationdictionary` argument to ProGuard.
      */
-    @Optional
-    @InputFile
-    @PathSensitive(PathSensitivity.NONE)
+    @get:Optional
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
     val obfuscationDictionary = objectFactory.fileProperty()
 
     /**
      * Passed as `-classobfuscationdictionary` argument to ProGuard.
      */
-    @Optional
-    @InputFile
-    @PathSensitive(PathSensitivity.NONE)
+    @get:Optional
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
     val classObfuscationDictionary = objectFactory.fileProperty()
 
     /**
      * Passed as `-packageobfuscationdictionary` argument to ProGuard.
      */
-    @Optional
-    @InputFile
-    @PathSensitive(PathSensitivity.NONE)
+    @get:Optional
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
     val packageObfuscationDictionary = objectFactory.fileProperty()
 
     /**
      * Passed as `-printconfiguration` argument to ProGuard.
      */
-    @Optional
-    @OutputFile
+    @get:Optional
+    @get:OutputFile
     val configurationFile = objectFactory.fileProperty()
 
     /**
      * Passed as `-printmapping` argument to ProGuard.
      */
-    @Optional
-    @OutputFile
+    @get:Optional
+    @get:OutputFile
     val mappingFile = objectFactory.fileProperty()
 
     /**
      * Passed as `-printseeds` argument to ProGuard.
      */
-    @Optional
-    @OutputFile
+    @get:Optional
+    @get:OutputFile
     val seedsFile = objectFactory.fileProperty()
 
     /**
      * Passed as `-printusage` argument to ProGuard.
      */
-    @Optional
-    @OutputFile
+    @get:Optional
+    @get:OutputFile
     val usageFile = objectFactory.fileProperty()
 
     /**
      * Passed as `-dump` argument to ProGuard.
      */
-    @Optional
-    @OutputFile
+    @get:Optional
+    @get:OutputFile
     val dumpFile = objectFactory.fileProperty()
 
     init {
