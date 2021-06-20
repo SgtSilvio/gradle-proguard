@@ -3,7 +3,7 @@ package com.github.sgtsilvio.gradle.proguard
 /**
  * @author Silvio Giebl
  */
-open class ProguardExtension {
+abstract class ProguardExtension {
 
     /**
      * Class to define ProGuard tasks.
