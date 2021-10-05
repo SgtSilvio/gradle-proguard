@@ -2,10 +2,12 @@ package com.github.sgtsilvio.gradle.proguard
 
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.LogLevel
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.*
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.listProperty
 import org.gradle.process.CommandLineArgumentProvider
+import java.io.File
 
 /**
  * Gradle task type to define ProGuard tasks.
@@ -34,25 +36,48 @@ import org.gradle.process.CommandLineArgumentProvider
 abstract class ProguardTask : JavaExec() {
 
     /**
-     * Combined list of input, library and output jars ordered by insertion.
-     * Passed as `-injars`, `-libraryjars` and `-outjars` arguments to ProGuard in the right order.
+     * Passed as `-injars` arguments to ProGuard.
      */
-    private val jarEntries = mutableListOf<JarEntry>()
+    @get:Nested
+    protected val inJarsEntries = mutableListOf<InJarsEntry>()
+    val inJars: FileCollection = objectFactory.fileCollection().from({ inJarsEntries.map { it.files } })
 
-    private val inJarsInternal = objectFactory.fileCollection()
-    val inJars: FileCollection @Classpath get() = inJarsInternal
-    private val inJarFiltersInternal = mutableListOf<String>()
-    protected val inJarFilters: List<String> @Input get() = inJarFiltersInternal
+    protected class InJarsEntry(
+        @get:Classpath
+        val files: FileCollection,
+        @get:Input
+        val filter: String
+    )
 
-    private val libraryJarsInternal = objectFactory.fileCollection()
-    val libraryJars: FileCollection @Classpath get() = libraryJarsInternal
-    private val libraryJarFiltersInternal = mutableListOf<String>()
-    protected val libraryJarFilters: List<String> @Input get() = libraryJarFiltersInternal
+    /**
+     * Passed as `-libraryjars` arguments to ProGuard.
+     */
+    @get:Nested
+    protected val libraryJarsEntries = mutableListOf<LibraryJarsEntry>()
+    val libraryJars: FileCollection = objectFactory.fileCollection().from({ libraryJarsEntries.map { it.files } })
 
-    private val outJarsInternal = objectFactory.fileCollection()
-    val outJars: FileCollection @OutputFiles get() = outJarsInternal
-    private val outJarFiltersInternal = mutableListOf<String>()
-    protected val outJarFilters: List<String> @Input get() = outJarFiltersInternal
+    protected class LibraryJarsEntry(
+        @get:Classpath
+        val files: FileCollection,
+        @get:Input
+        val filter: String
+    )
+
+    /**
+     * Passed as `-outjars` arguments to ProGuard.
+     */
+    @get:Nested
+    protected val outJarEntries = mutableListOf<OutJarEntry>()
+    val outJars: FileCollection = objectFactory.fileCollection().from({ outJarEntries.map { it.file } })
+
+    protected class OutJarEntry(
+        @get:OutputFile
+        val file: Provider<File>,
+        @get:Input
+        val filter: String,
+        @get:Input
+        val inJarsEntriesCount: Int
+    )
 
     /**
      * Collection of rules files passed as `-include` arguments to ProGuard.
@@ -150,48 +175,53 @@ abstract class ProguardTask : JavaExec() {
     /**
      * Adds input jars with an optional filter.
      *
-     * The order in which the [inJars], [libraryJars] and [outJars] methods are called defines the order of the
-     * `-injars`, `-libraryjars` and `-outjars` arguments.
+     * The order in which the [inJars] and [outJars] methods are called defines the order of the `-injars` and
+     * `-outjars` arguments.
      */
     fun inJars(files: Any, filter: String = "") {
-        jarEntries.add(JarEntry(objectFactory.fileCollection().from(files), "-injars", filter))
-        inJarsInternal.from(files)
-        inJarFiltersInternal.add(filter)
+        inJarsEntries.add(InJarsEntry(objectFactory.fileCollection().from(files), filter))
     }
 
     /**
      * Adds library jars with an optional filter.
-     *
-     * The order in which the [inJars], [libraryJars] and [outJars] methods are called defines the order of the
-     * `-injars`, `-libraryjars` and `-outjars` arguments.
      */
     fun libraryJars(files: Any, filter: String = "") {
-        jarEntries.add(JarEntry(objectFactory.fileCollection().from(files), "-libraryjars", filter))
-        libraryJarsInternal.from(files)
-        libraryJarFiltersInternal.add(filter)
+        libraryJarsEntries.add(LibraryJarsEntry(objectFactory.fileCollection().from(files), filter))
     }
 
     /**
-     * Adds output jars with an optional filter.
+     * Adds an output jar with an optional filter.
      *
-     * The order in which the [inJars], [libraryJars] and [outJars] methods are called defines the order of the
-     * `-injars`, `-libraryjars` and `-outjars` arguments.
+     * The order in which the [inJars] and [outJars] methods are called defines the order of the `-injars` and
+     * `-outjars` arguments.
      */
-    fun outJars(files: Any, filter: String = "") {
-        jarEntries.add(JarEntry(objectFactory.fileCollection().from(files), "-outjars", filter))
-        outJarsInternal.from(files)
-        outJarFiltersInternal.add(filter)
+    fun outJars(file: Any, filter: String = "") {
+        val fileProvider = objectFactory.fileCollection().from(file).builtBy(this).elements.map { it.first().asFile }
+        outJarEntries.add(OutJarEntry(fileProvider, filter, inJarsEntries.size))
     }
-
-    private data class JarEntry(val files: FileCollection, val type: String, val filter: String)
 
     private inner class ArgumentProvider : CommandLineArgumentProvider {
         override fun asArguments(): Iterable<String> {
             val arguments = mutableListOf<String>()
-            for (jarEntry in jarEntries) {
-                for (file in jarEntry.files) {
-                    val filter = if (jarEntry.filter.isEmpty()) "" else "(${jarEntry.filter})"
-                    arguments.add("${jarEntry.type} \"${file.absolutePath}\"$filter")
+
+            fun addJarArgument(type: String, file: File, filter: String) {
+                arguments.add("-${type}jars \"${file.absolutePath}\"" + if (filter.isEmpty()) "" else "($filter)")
+            }
+
+            var inJarsEntryIndex = 0
+            for (outJarEntry in outJarEntries) {
+                while (inJarsEntryIndex < outJarEntry.inJarsEntriesCount) {
+                    val inJarsEntry = inJarsEntries[inJarsEntryIndex]
+                    for (file in inJarsEntry.files) {
+                        addJarArgument("in", file, inJarsEntry.filter)
+                    }
+                    inJarsEntryIndex++
+                }
+                addJarArgument("out", outJarEntry.file.get(), outJarEntry.filter)
+            }
+            for (libraryJarsEntry in libraryJarsEntries) {
+                for (file in libraryJarsEntry.files) {
+                    addJarArgument("library", file, libraryJarsEntry.filter)
                 }
             }
             if (mappingInputFile.isPresent) {
