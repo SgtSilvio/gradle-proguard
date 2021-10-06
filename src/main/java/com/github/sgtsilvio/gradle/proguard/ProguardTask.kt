@@ -174,9 +174,6 @@ abstract class ProguardTask : JavaExec() {
         classpath = project.configurations[ProguardPlugin.CONFIGURATION_NAME]
         mainClass.set("proguard.ProGuard")
         argumentProviders += ArgumentProvider()
-
-        logging.captureStandardOutput(LogLevel.INFO)
-        logging.captureStandardError(LogLevel.ERROR)
     }
 
     /**
@@ -205,6 +202,12 @@ abstract class ProguardTask : JavaExec() {
     fun outJars(file: Any, filter: String = "") {
         val fileProvider = objectFactory.fileCollection().from(file).elements.map { it.first().asFile }
         outJarEntries.add(OutJarEntry(fileProvider, filter, inJarsEntries.size))
+    }
+
+    override fun exec() {
+        logging.captureStandardOutput(LogLevel.INFO)
+        logging.captureStandardError(LogLevel.ERROR)
+        super.exec()
     }
 
     private inner class ArgumentProvider : CommandLineArgumentProvider {
