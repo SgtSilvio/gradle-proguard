@@ -40,7 +40,6 @@ abstract class ProguardTask : JavaExec() {
      */
     @get:Nested
     protected val inJarsEntries = mutableListOf<InJarsEntry>()
-    val inJars: FileCollection = objectFactory.fileCollection().from({ inJarsEntries.map { it.files } })
 
     protected class InJarsEntry(
         @get:Classpath
@@ -49,12 +48,14 @@ abstract class ProguardTask : JavaExec() {
         val filter: String
     )
 
+    @get:Internal
+    val inJars: FileCollection = objectFactory.fileCollection().from({ inJarsEntries.map { it.files } })
+
     /**
      * Passed as `-libraryjars` arguments to ProGuard.
      */
     @get:Nested
     protected val libraryJarsEntries = mutableListOf<LibraryJarsEntry>()
-    val libraryJars: FileCollection = objectFactory.fileCollection().from({ libraryJarsEntries.map { it.files } })
 
     protected class LibraryJarsEntry(
         @get:Classpath
@@ -63,12 +64,14 @@ abstract class ProguardTask : JavaExec() {
         val filter: String
     )
 
+    @get:Internal
+    val libraryJars: FileCollection = objectFactory.fileCollection().from({ libraryJarsEntries.map { it.files } })
+
     /**
      * Passed as `-outjars` arguments to ProGuard.
      */
     @get:Nested
     protected val outJarEntries = mutableListOf<OutJarEntry>()
-    val outJars: FileCollection = objectFactory.fileCollection().from({ outJarEntries.map { it.file } })
 
     protected class OutJarEntry(
         @get:OutputFile
@@ -78,6 +81,10 @@ abstract class ProguardTask : JavaExec() {
         @get:Input
         val inJarsEntriesCount: Int
     )
+
+    @Suppress("LeakingThis")
+    @get:Internal
+    val outJars: FileCollection = objectFactory.fileCollection().from({ outJarEntries.map { it.file } }).builtBy(this)
 
     /**
      * Collection of rules files passed as `-include` arguments to ProGuard.
@@ -196,7 +203,7 @@ abstract class ProguardTask : JavaExec() {
      * `-outjars` arguments.
      */
     fun outJars(file: Any, filter: String = "") {
-        val fileProvider = objectFactory.fileCollection().from(file).builtBy(this).elements.map { it.first().asFile }
+        val fileProvider = objectFactory.fileCollection().from(file).elements.map { it.first().asFile }
         outJarEntries.add(OutJarEntry(fileProvider, filter, inJarsEntries.size))
     }
 
