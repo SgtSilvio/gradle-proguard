@@ -26,7 +26,7 @@ This implementation differs from the official ProGuard gradle plugin in the foll
 
 ```kotlin
 plugins {
-    id("com.github.sgtsilvio.gradle.proguard") version "0.1.1"
+    id("com.github.sgtsilvio.gradle.proguard") version "0.2.0"
 }
 
 //...
