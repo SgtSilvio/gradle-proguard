@@ -34,9 +34,17 @@ class ConfigurationCacheTest {
             }
             val proguardJar by tasks.registering(proguard.taskClass) {
                 inJars(tasks.jar)
-                libraryJars(project.fileTree("${System.getProperty("java.home")}/jmods"), "!**.jar;!module-info.class")
-                outJars(layout.buildDirectory.file("libs/test-proguarded.jar"))
+                libraryJars("${System.getProperty("java.home")}/jmods/java.base.jmod", "!**.jar;!module-info.class")
+                outJars(base.libsDirectory.file("test-proguarded.jar"))
+                mappingFile.set(layout.buildDirectory.file("test-mapping.txt"))
                 rules.add("-keep class test.Main { public static void main(java.lang.String[]); }")
+            }
+            // copy inJars, libraryJars, outJars to check if they are compatible with the configuration cache
+            val copyProguardJars by tasks.registering(Copy::class) {
+                from(proguardJar.map { it.inJars }) { into("inJars") }
+                from(proguardJar.map { it.libraryJars }) { into("libraryJars") }
+                from(proguardJar.map { it.outJars }) { into("outJars") }
+                into(layout.buildDirectory.dir("copyProguardJars"))
             }
             """.trimIndent()
         )
@@ -54,21 +62,23 @@ class ConfigurationCacheTest {
         val result = GradleRunner.create()
             .withProjectDir(projectDir)
             .withPluginClasspath()
-            .withArguments("proguardJar", "--configuration-cache")
+            .withArguments("copyProguardJars", "--configuration-cache")
             .build()
 
         assertTrue(result.output.contains("Configuration cache entry stored"))
         assertEquals(TaskOutcome.SUCCESS, result.task(":jar")?.outcome)
         assertEquals(TaskOutcome.SUCCESS, result.task(":proguardJar")?.outcome)
+        assertEquals(TaskOutcome.SUCCESS, result.task(":copyProguardJars")?.outcome)
 
         val result2 = GradleRunner.create()
             .withProjectDir(projectDir)
             .withPluginClasspath()
-            .withArguments("proguardJar", "--configuration-cache")
+            .withArguments("copyProguardJars", "--configuration-cache")
             .build()
 
         assertTrue(result2.output.contains("Configuration cache entry reused"))
         assertEquals(TaskOutcome.UP_TO_DATE, result2.task(":jar")?.outcome)
         assertEquals(TaskOutcome.UP_TO_DATE, result2.task(":proguardJar")?.outcome)
+        assertEquals(TaskOutcome.UP_TO_DATE, result2.task(":copyProguardJars")?.outcome)
     }
 }
