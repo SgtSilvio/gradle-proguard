@@ -32,10 +32,15 @@ plugins {
 //...
 
 val proguardJar by tasks.registering(proguard.taskClass) {
+    javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
+    
     inJars(tasks.shadowJar)
-    libraryJars(fileTree("${System.getProperty("java.home")}/jmods"), "!**.jar;!module-info.class")
-    outJars(buildDir.resolve("libs/${project.name}-${project.version}-proguarded.jar"))
-    mappingFile.set(buildDir.resolve("proguard.map"))
+    libraryJars(
+        javaLauncher.map { it.metadata.installationPath.dir("jmods").file("java.base.jmod") },
+        "!**.jar;!module-info.class"
+    )
+    outJars(base.libsDirectory.file("${project.name}-${project.version}-proguarded.jar"))
+    mappingFile.set(layout.buildDirectory.file("${project.name}-${project.version}-mapping.txt"))
 
     rules.addAll(
         "-dontoptimize",
