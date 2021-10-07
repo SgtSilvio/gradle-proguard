@@ -27,3 +27,12 @@ pluginBundle {
     vcsUrl = "https://github.com/SgtSilvio/gradle-proguard.git"
     tags = listOf("proguard", "obfuscation")
 }
+
+dependencies {
+    testImplementation("org.junit.jupiter:junit-jupiter-api:${property("junit-jupiter.version")}")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
+}
