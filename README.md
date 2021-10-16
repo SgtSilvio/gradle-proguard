@@ -32,8 +32,6 @@ plugins {
 //...
 
 val proguardJar by tasks.registering(proguard.taskClass) {
-    javaLauncher.set(javaToolchains.launcherFor(java.toolchain))
-    
     inJars(tasks.shadowJar)
     libraryJars(
         javaLauncher.map { it.metadata.installationPath.dir("jmods").file("java.base.jmod") },

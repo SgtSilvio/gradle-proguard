@@ -2,7 +2,12 @@ package com.github.sgtsilvio.gradle.proguard
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.plugins.JavaBasePlugin
+import org.gradle.api.plugins.JavaPluginExtension
+import org.gradle.jvm.toolchain.JavaToolchainService
 import org.gradle.kotlin.dsl.create
+import org.gradle.kotlin.dsl.getByType
+import org.gradle.kotlin.dsl.withType
 
 /**
  * Gradle plugin to ease using ProGuard.
@@ -32,9 +37,18 @@ class ProguardPlugin : Plugin<Project> {
         project.configurations.register(CONFIGURATION_NAME) {
             isCanBeResolved = true
             isCanBeConsumed = false
+            isVisible = false
 
             defaultDependencies {
                 add(project.dependencies.create("com.guardsquare:proguard-base:7.0.1"))
+            }
+        }
+
+        project.plugins.withType<JavaBasePlugin> {
+            project.tasks.withType<ProguardTask>().configureEach {
+                val javaPluginExtension = project.extensions.getByType<JavaPluginExtension>()
+                val javaToolchainService = project.extensions.getByType<JavaToolchainService>()
+                javaLauncher.convention(javaToolchainService.launcherFor(javaPluginExtension.toolchain))
             }
         }
     }
