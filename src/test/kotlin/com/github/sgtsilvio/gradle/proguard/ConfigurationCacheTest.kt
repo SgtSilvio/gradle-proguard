@@ -70,6 +70,8 @@ class ConfigurationCacheTest {
         assertEquals(TaskOutcome.SUCCESS, result.task(":proguardJar")?.outcome)
         assertEquals(TaskOutcome.SUCCESS, result.task(":copyProguardJars")?.outcome)
 
+        projectDir.resolve("build").deleteRecursively()
+
         val result2 = GradleRunner.create()
             .withProjectDir(projectDir)
             .withPluginClasspath()
@@ -77,8 +79,8 @@ class ConfigurationCacheTest {
             .build()
 
         assertTrue(result2.output.contains("Configuration cache entry reused"))
-        assertEquals(TaskOutcome.UP_TO_DATE, result2.task(":jar")?.outcome)
-        assertEquals(TaskOutcome.UP_TO_DATE, result2.task(":proguardJar")?.outcome)
-        assertEquals(TaskOutcome.UP_TO_DATE, result2.task(":copyProguardJars")?.outcome)
+        assertEquals(TaskOutcome.SUCCESS, result2.task(":jar")?.outcome)
+        assertEquals(TaskOutcome.SUCCESS, result2.task(":proguardJar")?.outcome)
+        assertEquals(TaskOutcome.SUCCESS, result2.task(":copyProguardJars")?.outcome)
     }
 }
