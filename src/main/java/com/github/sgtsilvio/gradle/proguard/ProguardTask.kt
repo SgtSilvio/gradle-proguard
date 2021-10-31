@@ -1,6 +1,7 @@
 package com.github.sgtsilvio.gradle.proguard
 
 import org.gradle.api.file.FileCollection
+import org.gradle.api.file.RegularFile
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.*
@@ -215,7 +216,19 @@ abstract class ProguardTask : JavaExec() {
             val arguments = mutableListOf<String>()
 
             fun addJarArgument(type: String, file: File, filter: String) {
-                arguments.add("-${type}jars \"${file.absolutePath}\"" + if (filter.isEmpty()) "" else "($filter)")
+                arguments.add("-${type}jars")
+                arguments.add("'${file.absolutePath}'" + if (filter.isEmpty()) "" else "($filter)")
+            }
+
+            fun addFileArgument(option: String, file: File) {
+                arguments.add(option)
+                arguments.add("'${file.absolutePath}'")
+            }
+
+            fun addFileArgument(option: String, fileProvider: Provider<RegularFile>) {
+                if (fileProvider.isPresent) {
+                    addFileArgument(option, fileProvider.get().asFile)
+                }
             }
 
             var inJarsEntryIndex = 0
@@ -234,35 +247,17 @@ abstract class ProguardTask : JavaExec() {
                     addJarArgument("library", file, libraryJarsEntry.filter)
                 }
             }
-            if (mappingInputFile.isPresent) {
-                arguments.add("-applymapping \"${mappingInputFile.get().asFile.absolutePath}\"")
-            }
-            if (obfuscationDictionary.isPresent) {
-                arguments.add("-obfuscationdictionary \"${obfuscationDictionary.get().asFile.absolutePath}\"")
-            }
-            if (classObfuscationDictionary.isPresent) {
-                arguments.add("-classobfuscationdictionary \"${classObfuscationDictionary.get().asFile.absolutePath}\"")
-            }
-            if (packageObfuscationDictionary.isPresent) {
-                arguments.add("-packageobfuscationdictionary \"${packageObfuscationDictionary.get().asFile.absolutePath}\"")
-            }
-            if (configurationFile.isPresent) {
-                arguments.add("-printconfiguration \"${configurationFile.get().asFile.absolutePath}\"")
-            }
-            if (mappingFile.isPresent) {
-                arguments.add("-printmapping \"${mappingFile.get().asFile.absolutePath}\"")
-            }
-            if (seedsFile.isPresent) {
-                arguments.add("-printseeds \"${seedsFile.get().asFile.absolutePath}\"")
-            }
-            if (usageFile.isPresent) {
-                arguments.add("-printusage \"${usageFile.get().asFile.absolutePath}\"")
-            }
-            if (dumpFile.isPresent) {
-                arguments.add("-dump \"${dumpFile.get().asFile.absolutePath}\"")
-            }
+            addFileArgument("-applymapping", mappingInputFile)
+            addFileArgument("-obfuscationdictionary", obfuscationDictionary)
+            addFileArgument("-classobfuscationdictionary", classObfuscationDictionary)
+            addFileArgument("-packageobfuscationdictionary", packageObfuscationDictionary)
+            addFileArgument("-printconfiguration", configurationFile)
+            addFileArgument("-printmapping", mappingFile)
+            addFileArgument("-printseeds", seedsFile)
+            addFileArgument("-printusage", usageFile)
+            addFileArgument("-dump", dumpFile)
             for (rulesFile in rulesFiles) {
-                arguments.add("-include \"${rulesFile.absolutePath}\"")
+                addFileArgument("-include", rulesFile)
             }
             for (rule in rules.get()) {
                 arguments.add(rule)
