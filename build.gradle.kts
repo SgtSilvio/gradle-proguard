@@ -1,7 +1,12 @@
 plugins {
     `kotlin-dsl`
-    `java-gradle-plugin`
     id("com.gradle.plugin-publish")
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
+    }
 }
 
 group = "com.github.sgtsilvio.gradle"
