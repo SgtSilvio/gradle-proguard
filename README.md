@@ -38,7 +38,7 @@ val proguardJar by tasks.registering(proguard.taskClass) {
         "!**.jar;!module-info.class"
     )
     outJars(base.libsDirectory.file("${project.name}-${project.version}-proguarded.jar"))
-    mappingFile.set(layout.buildDirectory.file("${project.name}-${project.version}-mapping.txt"))
+    mappingFile.set(base.libsDirectory.file("${project.name}-${project.version}-mapping.txt"))
 
     rules.addAll(
         "-dontoptimize",
