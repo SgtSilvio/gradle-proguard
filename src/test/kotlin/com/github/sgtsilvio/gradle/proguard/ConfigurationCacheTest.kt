@@ -29,9 +29,17 @@ class ConfigurationCacheTest {
             repositories {
                 mavenCentral()
             }
+            java {
+                toolchain {
+                    languageVersion.set(JavaLanguageVersion.of(11))
+                }
+            }
             val proguardJar by tasks.registering(proguard.taskClass) {
                 inJars(tasks.jar)
-                libraryJars("${'$'}{System.getProperty("java.home")}/jmods/java.base.jmod", "!**.jar;!module-info.class")
+                libraryJars(
+                    javaLauncher.map { it.metadata.installationPath.dir("jmods").file("java.base.jmod") },
+                    "!**.jar;!module-info.class"
+                )
                 outJars(base.libsDirectory.file("test-proguarded.jar"))
                 mappingFile.set(layout.buildDirectory.file("test-mapping.txt"))
                 rules.add("-keep class test.Main { public static void main(java.lang.String[]); }")

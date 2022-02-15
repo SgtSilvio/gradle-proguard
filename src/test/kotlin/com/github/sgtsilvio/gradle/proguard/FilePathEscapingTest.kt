@@ -31,9 +31,17 @@ class FilePathEscapingTest {
             repositories {
                 mavenCentral()
             }
+            java {
+                toolchain {
+                    languageVersion.set(JavaLanguageVersion.of(11))
+                }
+            }
             val proguardJar by tasks.registering(proguard.taskClass) {
                 inJars(tasks.jar)
-                libraryJars("${'$'}{System.getProperty("java.home")}/jmods/java.base.jmod", "!**.jar;!module-info.class")
+                libraryJars(
+                    javaLauncher.map { it.metadata.installationPath.dir("jmods").file("java.base.jmod") },
+                    "!**.jar;!module-info.class"
+                )
                 outJars(base.libsDirectory.file("test-proguarded.jar"))
                 configurationFile.set(layout.buildDirectory.file("test-config.txt"))
                 mappingFile.set(layout.buildDirectory.file("test-mapping.txt"))
