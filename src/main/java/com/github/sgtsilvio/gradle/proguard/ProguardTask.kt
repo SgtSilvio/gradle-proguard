@@ -2,7 +2,6 @@ package com.github.sgtsilvio.gradle.proguard
 
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.RegularFile
-import org.gradle.api.logging.LogLevel
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.*
 import org.gradle.kotlin.dsl.get
@@ -206,8 +205,8 @@ abstract class ProguardTask : JavaExec() {
     }
 
     override fun exec() {
-        logging.captureStandardOutput(LogLevel.INFO)
-        logging.captureStandardError(LogLevel.ERROR)
+        standardOutput = LogOutputStream { logger.info(it) }
+        errorOutput = LogOutputStream { logger.error(it) }
         super.exec()
     }
 

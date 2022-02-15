@@ -2,8 +2,7 @@ package com.github.sgtsilvio.gradle.proguard
 
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -71,6 +70,7 @@ class ConfigurationCacheTest {
             .build()
 
         assertTrue(result.output.contains("Configuration cache entry stored"))
+        assertFalse(result.output.contains("ProGuard, version")) // stdout should be silenced
         assertEquals(TaskOutcome.SUCCESS, result.task(":jar")?.outcome)
         assertEquals(TaskOutcome.SUCCESS, result.task(":proguardJar")?.outcome)
         assertEquals(TaskOutcome.SUCCESS, result.task(":copyProguardJars")?.outcome)
@@ -84,6 +84,7 @@ class ConfigurationCacheTest {
             .build()
 
         assertTrue(result2.output.contains("Configuration cache entry reused"))
+        assertFalse(result2.output.contains("ProGuard, version")) // stdout should be silenced
         assertEquals(TaskOutcome.SUCCESS, result2.task(":jar")?.outcome)
         assertEquals(TaskOutcome.SUCCESS, result2.task(":proguardJar")?.outcome)
         assertEquals(TaskOutcome.SUCCESS, result2.task(":copyProguardJars")?.outcome)
