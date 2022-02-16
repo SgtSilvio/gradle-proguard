@@ -1,16 +1,17 @@
 plugins {
     `kotlin-dsl`
+    `maven-publish`
     id("com.gradle.plugin-publish")
 }
+
+group = "com.github.sgtsilvio.gradle"
+description = "Gradle plugin to ease using ProGuard"
 
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(8))
     }
 }
-
-group = "com.github.sgtsilvio.gradle"
-description = "Gradle plugin to ease using ProGuard"
 
 repositories {
     mavenCentral()
