@@ -3,10 +3,28 @@ plugins {
     `kotlin-dsl`
     `maven-publish`
     alias(libs.plugins.plugin.publish)
+    alias(libs.plugins.metadata)
 }
 
 group = "com.github.sgtsilvio.gradle"
 description = "Gradle plugin to ease using ProGuard"
+
+metadata {
+    readableName.set("Gradle ProGuard Plugin")
+    license {
+        apache2()
+    }
+    developers {
+        register("SgtSilvio") {
+            fullName.set("Silvio Giebl")
+        }
+    }
+    github {
+        org.set("SgtSilvio")
+        repo.set("gradle-proguard")
+        issues()
+    }
+}
 
 java {
     toolchain {
@@ -22,16 +40,16 @@ gradlePlugin {
     plugins {
         create("proguard") {
             id = "$group.$name"
-            displayName = "Gradle ProGuard plugin"
+            displayName = metadata.readableName.get()
             description = project.description
-            implementationClass = "$group.proguard.ProguardPlugin"
+            implementationClass = "$group.$name.ProguardPlugin"
         }
     }
 }
 
 pluginBundle {
-    website = "https://github.com/SgtSilvio/gradle-proguard"
-    vcsUrl = "https://github.com/SgtSilvio/gradle-proguard.git"
+    website = metadata.url.get()
+    vcsUrl = metadata.scm.get().url.get()
     tags = listOf("proguard", "obfuscation")
 }
 
