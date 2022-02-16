@@ -1,7 +1,8 @@
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     `kotlin-dsl`
     `maven-publish`
-    id("com.gradle.plugin-publish")
+    alias(libs.plugins.plugin.publish)
 }
 
 group = "com.github.sgtsilvio.gradle"
@@ -34,10 +35,8 @@ pluginBundle {
     tags = listOf("proguard", "obfuscation")
 }
 
-dependencies {
-    testImplementation("org.junit.jupiter:junit-jupiter:${property("junit-jupiter.version")}")
-}
-
-tasks.withType<Test>().configureEach {
-    useJUnitPlatform()
+testing {
+    suites.named<JvmTestSuite>("test") {
+        useJUnitJupiter(libs.versions.junit.jupiter.get())
+    }
 }

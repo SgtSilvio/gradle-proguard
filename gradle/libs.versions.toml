@@ -1,0 +1,5 @@
+[versions]
+junit-jupiter = "5.8.2"
+
+[plugins]
+plugin-publish = { id = "com.gradle.plugin-publish", version = "0.20.0" }
