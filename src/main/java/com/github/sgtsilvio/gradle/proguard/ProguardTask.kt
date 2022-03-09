@@ -205,8 +205,8 @@ abstract class ProguardTask : JavaExec() {
     }
 
     override fun exec() {
-        standardOutput = LogOutputStream { logger.info(it) }
-        errorOutput = LogOutputStream { logger.error(it) }
+        standardOutput = LineOutputStream { logger.info(it) }
+        errorOutput = LineOutputStream { logger.error(it) }
         super.exec()
     }
 
