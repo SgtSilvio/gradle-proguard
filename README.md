@@ -63,7 +63,7 @@ The default dependency is overwritten if you specify any dependency for this con
 
 ```kotlin
 dependencies {
-    proguardClasspath("com.guardsquare:proguard-base:7.1.1")
+    proguardClasspath("com.guardsquare:proguard-base:7.2.2")
 }
 ```
 
