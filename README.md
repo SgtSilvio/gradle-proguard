@@ -26,7 +26,7 @@ This implementation differs from the official ProGuard gradle plugin in the foll
 
 ```kotlin
 plugins {
-    id("com.github.sgtsilvio.gradle.proguard") version "0.3.3"
+    id("com.github.sgtsilvio.gradle.proguard") version "0.3.4"
 }
 
 //...
@@ -63,7 +63,7 @@ The default dependency is overwritten if you specify any dependency for this con
 
 ```kotlin
 dependencies {
-    proguardClasspath("com.guardsquare:proguard-base:7.0.1")
+    proguardClasspath("com.guardsquare:proguard-base:7.2.2")
 }
 ```
 
