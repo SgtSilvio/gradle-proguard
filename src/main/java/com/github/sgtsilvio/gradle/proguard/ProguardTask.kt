@@ -82,17 +82,12 @@ abstract class ProguardTask : JavaExec() {
     inner class InputEntry {
         /**
          * Can contain archive files and/or directories.
-         * Archive files may be of type jar, apk, aab, aar, war, ear, jmod, or zip
-         * (supported types may depend on the ProGuard version).
          */
         @get:Classpath
         val classpath = objectFactory.fileCollection()
 
         /**
          * Glob style filters for the files in [InputEntry.classpath].
-         * Filters for different types (file, jar, war, ear, jmod, zip, apk, aab, aar) are separated by `;`
-         * (supported types and order may depend on the ProGuard version).
-         * Multiple filters for the same type are separated by `,`.
          */
         @get:Input
         val filter = objectFactory.property<String>().convention("")
@@ -101,8 +96,6 @@ abstract class ProguardTask : JavaExec() {
     inner class OutputEntry {
         /**
          * Mutually exclusive with [directory], exactly one must be set.
-         * May be of type jar, apk, aab, aar, war, ear, jmod, or zip
-         * (supported types may depend on the ProGuard version).
          */
         @get:Optional
         @get:OutputFile
@@ -120,9 +113,6 @@ abstract class ProguardTask : JavaExec() {
 
         /**
          * Glob style filters for the files in [archiveFile] or [directory].
-         * Filters for different types (file, jar, war, ear, jmod, zip, apk, aab, aar) are separated by `;`
-         * (supported types and order may depend on the ProGuard version).
-         * Multiple filters for the same type are separated by `,`.
          */
         @get:Input
         val filter = objectFactory.property<String>().convention("")
@@ -137,17 +127,12 @@ abstract class ProguardTask : JavaExec() {
     inner class LibraryEntry {
         /**
          * Can contain archive files and/or directories.
-         * Archive files may be of type jar, apk, aab, aar, war, ear, jmod, or zip
-         * (supported types may depend on the ProGuard version).
          */
         @get:Classpath
         val classpath = objectFactory.fileCollection()
 
         /**
          * Glob style filters for the files in [LibraryEntry.classpath].
-         * Filters for different types (file, jar, war, ear, jmod, zip, apk, aab, aar) are separated by `;`
-         * (supported types and order may depend on the ProGuard version).
-         * Multiple filters for the same type are separated by `,`.
          */
         @get:Input
         val filter = objectFactory.property<String>().convention("")
