@@ -1,11 +1,15 @@
 package com.github.sgtsilvio.gradle.proguard
 
+import org.gradle.api.Action
+import org.gradle.api.GradleException
 import org.gradle.api.file.FileCollection
+import org.gradle.api.file.FileSystemLocation
 import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.*
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.listProperty
+import org.gradle.kotlin.dsl.property
 import org.gradle.process.CommandLineArgumentProvider
 import java.io.File
 
@@ -36,55 +40,138 @@ import java.io.File
 abstract class ProguardTask : JavaExec() {
 
     /**
-     * Passed as `-injars` arguments to ProGuard.
+     * Passed as groups of multiple `-injars` and multiple `-outjars` arguments each to ProGuard.
      */
     @get:Nested
-    protected val inJarsEntries = mutableListOf<InJarsEntry>()
+    val inputOutputGroups = mutableListOf<InputOutputGroup>()
 
-    protected class InJarsEntry(
+    inner class InputOutputGroup {
+        /**
+         * Passed as multiple `-injars` arguments to ProGuard.
+         */
+        @get:Nested
+        val inputs = mutableListOf<InputEntry>()
+
+        /**
+         * Passed as multiple `-outjars` arguments to ProGuard.
+         */
+        @get:Nested
+        val outputs = mutableListOf<OutputEntry>()
+
+        /**
+         * Adds a new input entry to this group of inputs and outputs and configures it.
+         */
+        fun addInput(action: Action<InputEntry>) {
+            val input = InputEntry()
+            inputs.add(input)
+            action.execute(input)
+        }
+
+        /**
+         * Adds a new output entry to this group of inputs and outputs and configures it.
+         */
+        fun addOutput(action: Action<OutputEntry>) {
+            val output = OutputEntry()
+            output.archiveFile.builtBy(this@ProguardTask)
+            output.directory.builtBy(this@ProguardTask)
+            outputs.add(output)
+            action.execute(output)
+        }
+    }
+
+    inner class InputEntry {
+        /**
+         * Can contain archive files and/or directories.
+         * Archive files may be of type jar, apk, aab, aar, war, ear, jmod, or zip
+         * (supported types may depend on the ProGuard version).
+         */
         @get:Classpath
-        val files: FileCollection,
-        @get:Input
-        val filter: String
-    )
+        val classpath = objectFactory.fileCollection()
 
-    @get:Internal
-    val inJars: FileCollection = objectFactory.fileCollection().from({ inJarsEntries.map { it.files } })
+        /**
+         * Glob style filters for the files in [InputEntry.classpath].
+         * Filters for different types (file, jar, war, ear, jmod, zip, apk, aab, aar) are separated by `;`
+         * (supported types and order may depend on the ProGuard version).
+         * Multiple filters for the same type are separated by `,`.
+         */
+        @get:Input
+        val filter = objectFactory.property<String>().convention("")
+    }
+
+    inner class OutputEntry {
+        /**
+         * Mutually exclusive with [directory], exactly one must be set.
+         * May be of type jar, apk, aab, aar, war, ear, jmod, or zip
+         * (supported types may depend on the ProGuard version).
+         */
+        @get:Optional
+        @get:OutputFile
+        val archiveFile = objectFactory.fileProperty()
+
+        /**
+         * Mutually exclusive with [archiveFile], exactly one must be set.
+         */
+        @get:Optional
+        @get:OutputDirectory
+        val directory = objectFactory.directoryProperty()
+
+        @get:Internal
+        internal val archiveFileOrDirectory get() = archiveFile.map<FileSystemLocation> { it }.orElse(directory)
+
+        /**
+         * Glob style filters for the files in [archiveFile] or [directory].
+         * Filters for different types (file, jar, war, ear, jmod, zip, apk, aab, aar) are separated by `;`
+         * (supported types and order may depend on the ProGuard version).
+         * Multiple filters for the same type are separated by `,`.
+         */
+        @get:Input
+        val filter = objectFactory.property<String>().convention("")
+    }
 
     /**
      * Passed as `-libraryjars` arguments to ProGuard.
      */
     @get:Nested
-    protected val libraryJarsEntries = mutableListOf<LibraryJarsEntry>()
+    val libraries = mutableListOf<LibraryEntry>()
 
-    protected class LibraryJarsEntry(
+    inner class LibraryEntry {
+        /**
+         * Can contain archive files and/or directories.
+         * Archive files may be of type jar, apk, aab, aar, war, ear, jmod, or zip
+         * (supported types may depend on the ProGuard version).
+         */
         @get:Classpath
-        val files: FileCollection,
-        @get:Input
-        val filter: String
-    )
+        val classpath = objectFactory.fileCollection()
 
-    @get:Internal
-    val libraryJars: FileCollection = objectFactory.fileCollection().from({ libraryJarsEntries.map { it.files } })
+        /**
+         * Glob style filters for the files in [LibraryEntry.classpath].
+         * Filters for different types (file, jar, war, ear, jmod, zip, apk, aab, aar) are separated by `;`
+         * (supported types and order may depend on the ProGuard version).
+         * Multiple filters for the same type are separated by `,`.
+         */
+        @get:Input
+        val filter = objectFactory.property<String>().convention("")
+    }
 
     /**
-     * Passed as `-outjars` arguments to ProGuard.
+     * Flattened collection of all input archive files and/or directories.
      */
-    @get:Nested
-    protected val outJarEntries = mutableListOf<OutJarEntry>()
-
-    protected class OutJarEntry(
-        @get:OutputFile
-        val file: Provider<File>,
-        @get:Input
-        val filter: String,
-        @get:Input
-        val inJarsEntriesCount: Int
-    )
-
-    @Suppress("LeakingThis")
     @get:Internal
-    val outJars: FileCollection = objectFactory.fileCollection().from({ outJarEntries.map { it.file } }).builtBy(this)
+    val inJars: FileCollection =
+        objectFactory.fileCollection().from({ inputOutputGroups.flatMap { it.inputs }.map { it.classpath } })
+
+    /**
+     * Flattened collection of all output archive files and/or directories.
+     */
+    @get:Internal
+    val outJars: FileCollection = objectFactory.fileCollection()
+        .from({ inputOutputGroups.flatMap { it.outputs }.map { it.archiveFileOrDirectory } })
+
+    /**
+     * Flattened collection of all library archive files and/or directories.
+     */
+    @get:Internal
+    val libraryJars: FileCollection = objectFactory.fileCollection().from({ libraries.map { it.classpath } })
 
     /**
      * Collection of rules files passed as `-include` arguments to ProGuard.
@@ -174,6 +261,35 @@ abstract class ProguardTask : JavaExec() {
         classpath = project.configurations[ProguardPlugin.CONFIGURATION_NAME]
         mainClass.set("proguard.ProGuard")
         argumentProviders += ArgumentProvider()
+        addInputOutputGroup {}
+    }
+
+    /**
+     * Adds a new input entry to the first group of inputs and outputs and configures it.
+     */
+    fun addInput(action: Action<InputEntry>) = inputOutputGroups[0].addInput(action)
+
+    /**
+     * Adds a new output entry to the first group of inputs and outputs and configures it.
+     */
+    fun addOutput(action: Action<OutputEntry>) = inputOutputGroups[0].addOutput(action)
+
+    /**
+     * Adds a new group of inputs and outputs and configures it.
+     */
+    fun addInputOutputGroup(action: Action<InputOutputGroup>) {
+        val inputOutputGroup = InputOutputGroup()
+        inputOutputGroups.add(inputOutputGroup)
+        action.execute(inputOutputGroup)
+    }
+
+    /**
+     * Adds a new library entry and configures it.
+     */
+    fun addLibrary(action: Action<LibraryEntry>) {
+        val library = LibraryEntry()
+        libraries.add(library)
+        action.execute(library)
     }
 
     /**
@@ -182,15 +298,18 @@ abstract class ProguardTask : JavaExec() {
      * The order in which the [inJars] and [outJars] methods are called defines the order of the `-injars` and
      * `-outjars` arguments.
      */
+    @Deprecated(
+        "Inputs and outputs have been refactored to be modifiable whereas this method was add-only.",
+        ReplaceWith("addInput { classpath.from(files)\nthis.filter.set(filter) }")
+    )
     fun inJars(files: Any, filter: String = "") {
-        inJarsEntries.add(InJarsEntry(objectFactory.fileCollection().from(files), filter))
-    }
-
-    /**
-     * Adds library jars with an optional filter.
-     */
-    fun libraryJars(files: Any, filter: String = "") {
-        libraryJarsEntries.add(LibraryJarsEntry(objectFactory.fileCollection().from(files), filter))
+        if (inputOutputGroups.last().outputs.isNotEmpty()) {
+            addInputOutputGroup {}
+        }
+        inputOutputGroups.last().addInput {
+            classpath.from(files)
+            this.filter.set(filter)
+        }
     }
 
     /**
@@ -199,9 +318,29 @@ abstract class ProguardTask : JavaExec() {
      * The order in which the [inJars] and [outJars] methods are called defines the order of the `-injars` and
      * `-outjars` arguments.
      */
+    @Deprecated(
+        "Inputs and outputs have been refactored to be modifiable whereas this method was add-only.",
+        ReplaceWith("addOutput { archiveFile.set(file)\nthis.filter.set(filter) }")
+    )
     fun outJars(file: Any, filter: String = "") {
-        val fileProvider = objectFactory.fileCollection().from(file).elements.map { it.first().asFile }
-        outJarEntries.add(OutJarEntry(fileProvider, filter, inJarsEntries.size))
+        inputOutputGroups.last().addOutput {
+            archiveFile.set(objectFactory.fileCollection().from(file).elements.map { it.first() as RegularFile })
+            this.filter.set(filter)
+        }
+    }
+
+    /**
+     * Adds library jars with an optional filter.
+     */
+    @Deprecated(
+        "Inputs and outputs have been refactored to be modifiable whereas this method was add-only.",
+        ReplaceWith("addLibrary { classpath.from(files)\nthis.filter.set(filter) }")
+    )
+    fun libraryJars(files: Any, filter: String = "") {
+        addLibrary {
+            classpath.from(files)
+            this.filter.set(filter)
+        }
     }
 
     override fun exec() {
@@ -230,20 +369,40 @@ abstract class ProguardTask : JavaExec() {
                 }
             }
 
-            var inJarsEntryIndex = 0
-            for (outJarEntry in outJarEntries) {
-                while (inJarsEntryIndex < outJarEntry.inJarsEntriesCount) {
-                    val inJarsEntry = inJarsEntries[inJarsEntryIndex]
-                    for (file in inJarsEntry.files) {
-                        addJarArgument("in", file, inJarsEntry.filter)
+            for ((groupIndex, inputOutputGroup) in inputOutputGroups.withIndex()) {
+                var inJarsAdded = false
+                for (input in inputOutputGroup.inputs) {
+                    val filter = input.filter.get()
+                    for (file in input.classpath.files) {
+                        addJarArgument("in", file, filter)
+                        inJarsAdded = true
                     }
-                    inJarsEntryIndex++
                 }
-                addJarArgument("out", outJarEntry.file.get(), outJarEntry.filter)
+                if (!inJarsAdded) {
+                    throw GradleException("inputOutputGroups.\$$groupIndex.inputs classpath did not contain any files.")
+                }
+                if (inputOutputGroup.outputs.isEmpty() && (inputOutputGroups.size > 1)) {
+                    throw GradleException("inputOutputGroups.\$$groupIndex.outputs are empty although multiple inputOutputGroups are configured.")
+                }
+                for ((outputIndex, output) in inputOutputGroup.outputs.withIndex()) {
+                    val archiveFile = output.archiveFile.orNull
+                    val directory = output.directory.orNull
+                    val filter = output.filter.get()
+                    if ((archiveFile != null) && (directory != null)) {
+                        throw GradleException("In inputOutputGroups.\$$groupIndex.outputs.\$$outputIndex both archiveFile and directory have a configured value.")
+                    } else if (archiveFile != null) {
+                        addJarArgument("out", archiveFile.asFile, filter)
+                    } else if (directory != null) {
+                        addJarArgument("out", directory.asFile, filter)
+                    } else {
+                        throw GradleException("In inputOutputGroups.\$$groupIndex.outputs.\$$outputIndex neither archiveFile nor directory have a configured value.")
+                    }
+                }
             }
-            for (libraryJarsEntry in libraryJarsEntries) {
-                for (file in libraryJarsEntry.files) {
-                    addJarArgument("library", file, libraryJarsEntry.filter)
+            for (library in libraries) {
+                val filter = library.filter.get()
+                for (file in library.classpath.files) {
+                    addJarArgument("library", file, filter)
                 }
             }
             addFileArgument("-applymapping", mappingInputFile)
