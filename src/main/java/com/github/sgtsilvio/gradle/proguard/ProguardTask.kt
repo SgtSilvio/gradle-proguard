@@ -309,7 +309,7 @@ abstract class ProguardTask : JavaExec() {
     )
     fun outJars(file: Any, filter: String = "") {
         inputOutputGroups.last().addOutput {
-            archiveFile.set(objectFactory.fileCollection().from(file).elements.map { it.first() as RegularFile })
+            archiveFile.set(project.layout.file(project.files(file).elements.map { it.first().asFile }))
             this.filter.set(filter)
         }
     }
