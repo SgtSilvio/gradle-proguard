@@ -142,21 +142,21 @@ abstract class ProguardTask : JavaExec() {
      * Flattened collection of all input archive files and/or directories.
      */
     @get:Internal
-    val inJars: FileCollection =
+    val inputClasspath: FileCollection =
         objectFactory.fileCollection().from({ inputOutputGroups.flatMap { it.inputs }.map { it.classpath } })
 
     /**
      * Flattened collection of all output archive files and/or directories.
      */
     @get:Internal
-    val outJars: FileCollection = objectFactory.fileCollection()
+    val outputClasspath: FileCollection = objectFactory.fileCollection()
         .from({ inputOutputGroups.flatMap { it.outputs }.map { it.archiveFileOrDirectory } })
 
     /**
      * Flattened collection of all library archive files and/or directories.
      */
     @get:Internal
-    val libraryJars: FileCollection = objectFactory.fileCollection().from({ libraries.map { it.classpath } })
+    val libraryClasspath: FileCollection = objectFactory.fileCollection().from({ libraries.map { it.classpath } })
 
     /**
      * Collection of rules files passed as `-include` arguments to ProGuard.
@@ -276,6 +276,18 @@ abstract class ProguardTask : JavaExec() {
         libraries.add(library)
         action.execute(library)
     }
+
+    @get:Internal
+    @get:Deprecated("", ReplaceWith("inputClasspath"))
+    val inJars get() = inputClasspath
+
+    @get:Internal
+    @get:Deprecated("", ReplaceWith("outputClasspath"))
+    val outJars get() = outputClasspath
+
+    @get:Internal
+    @get:Deprecated("", ReplaceWith("libraryClasspath"))
+    val libraryJars get() = libraryClasspath
 
     /**
      * Adds input jars with an optional filter.
