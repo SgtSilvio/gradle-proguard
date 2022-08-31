@@ -142,21 +142,22 @@ abstract class ProguardTask : JavaExec() {
      * Flattened collection of all input archive files and/or directories.
      */
     @get:Internal
-    val inputClasspath: FileCollection =
-        objectFactory.fileCollection().from({ inputOutputGroups.flatMap { it.inputs }.map { it.classpath } })
+    val inputClasspath: FileCollection
+        get() = objectFactory.fileCollection().from({ inputOutputGroups.flatMap { it.inputs }.map { it.classpath } })
 
     /**
      * Flattened collection of all output archive files and/or directories.
      */
     @get:Internal
-    val outputClasspath: FileCollection = objectFactory.fileCollection()
-        .from({ inputOutputGroups.flatMap { it.outputs }.map { it.archiveFileOrDirectory } })
+    val outputClasspath: FileCollection
+        get() = objectFactory.fileCollection()
+            .from({ inputOutputGroups.flatMap { it.outputs }.map { it.archiveFileOrDirectory } })
 
     /**
      * Flattened collection of all library archive files and/or directories.
      */
     @get:Internal
-    val libraryClasspath: FileCollection = objectFactory.fileCollection().from({ libraries.map { it.classpath } })
+    val libraryClasspath: FileCollection get() = objectFactory.fileCollection().from({ libraries.map { it.classpath } })
 
     /**
      * Collection of rules files passed as `-include` arguments to ProGuard.
