@@ -15,9 +15,7 @@ internal class LineOutputStream(private val consumer: (String) -> Unit) : Output
     private val stringBuilder = StringBuilder()
     private var lastCR = false
 
-    override fun write(b: Int) {
-        write(byteArrayOf(b.toByte()))
-    }
+    override fun write(b: Int) = write(byteArrayOf(b.toByte()))
 
     override fun write(b: ByteArray, off: Int, len: Int) {
         val end = off + len
