@@ -278,15 +278,24 @@ abstract class ProguardTask : JavaExec() {
     }
 
     @get:Internal
-    @get:Deprecated("", ReplaceWith("inputClasspath"))
+    @get:Deprecated(
+        "Renamed to reflect that it can contain archive files and/or directories.",
+        ReplaceWith("inputClasspath")
+    )
     val inJars get() = inputClasspath
 
     @get:Internal
-    @get:Deprecated("", ReplaceWith("outputClasspath"))
+    @get:Deprecated(
+        "Renamed to reflect that it can contain archive files and/or directories.",
+        ReplaceWith("outputClasspath")
+    )
     val outJars get() = outputClasspath
 
     @get:Internal
-    @get:Deprecated("", ReplaceWith("libraryClasspath"))
+    @get:Deprecated(
+        "Renamed to reflect that it can contain archive files and/or directories.",
+        ReplaceWith("libraryClasspath")
+    )
     val libraryJars get() = libraryClasspath
 
     /**
