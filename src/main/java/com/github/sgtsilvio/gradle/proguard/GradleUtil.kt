@@ -5,7 +5,7 @@ import org.gradle.api.internal.provider.PropertyInternal
 import org.gradle.api.provider.Property
 import org.gradle.internal.state.ModelObject
 
-fun Property<*>.builtBy(task: Task) {
+internal fun Property<*>.builtBy(task: Task) {
     try {
         (this as PropertyInternal<*>).attachProducer(task as ModelObject)
     } catch (e: Throwable) {

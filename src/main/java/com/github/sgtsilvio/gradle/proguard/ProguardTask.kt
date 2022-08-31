@@ -174,7 +174,7 @@ abstract class ProguardTask : JavaExec() {
      * The rules must not contain file configuration parameters; these are declared here as inputs and outputs.
      */
     @get:Input
-    val rules = objectFactory.listProperty(String::class)
+    val rules = objectFactory.listProperty<String>()
 
     /**
      * Passed as `-applymapping` argument to ProGuard.
@@ -280,22 +280,19 @@ abstract class ProguardTask : JavaExec() {
 
     @get:Internal
     @get:Deprecated(
-        "Renamed to reflect that it can contain archive files and/or directories.",
-        ReplaceWith("inputClasspath")
+        "Renamed to reflect that it can contain archive files and/or directories.", ReplaceWith("inputClasspath")
     )
     val inJars get() = inputClasspath
 
     @get:Internal
     @get:Deprecated(
-        "Renamed to reflect that it can contain archive files and/or directories.",
-        ReplaceWith("outputClasspath")
+        "Renamed to reflect that it can contain archive files and/or directories.", ReplaceWith("outputClasspath")
     )
     val outJars get() = outputClasspath
 
     @get:Internal
     @get:Deprecated(
-        "Renamed to reflect that it can contain archive files and/or directories.",
-        ReplaceWith("libraryClasspath")
+        "Renamed to reflect that it can contain archive files and/or directories.", ReplaceWith("libraryClasspath")
     )
     val libraryJars get() = libraryClasspath
 
