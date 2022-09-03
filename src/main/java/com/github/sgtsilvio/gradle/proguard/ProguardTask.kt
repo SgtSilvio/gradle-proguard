@@ -243,6 +243,12 @@ abstract class ProguardTask : JavaExec() {
     @get:OutputFile
     val dumpFile = objectFactory.fileProperty()
 
+    /**
+     * Passed as `-libraryjars` arguments to ProGuard.
+     */
+    @get:Input
+    val jdkModules = objectFactory.listProperty<String>()
+
     init {
         classpath = project.configurations[ProguardPlugin.CONFIGURATION_NAME]
         mainClass.set("proguard.ProGuard")
@@ -407,6 +413,13 @@ abstract class ProguardTask : JavaExec() {
                 val filter = library.filter.get()
                 for (file in library.classpath.files) {
                     addJarArgument("library", file, filter)
+                }
+            }
+            val jdkModules = jdkModules.get()
+            if (jdkModules.isNotEmpty()) {
+                val dir = javaLauncher.get().metadata.installationPath.dir("jmods")
+                for (jdkModule in jdkModules) {
+                    addJarArgument("library", dir.file("$jdkModule.jmod").asFile, "!**.jar;!module-info.class")
                 }
             }
             addFileArgument("-applymapping", mappingInputFile)
