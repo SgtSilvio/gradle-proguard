@@ -34,12 +34,9 @@ class ConfigurationCacheTest {
                 }
             }
             val proguardJar by tasks.registering(proguard.taskClass) {
-                inJars(tasks.jar)
-                libraryJars(
-                    javaLauncher.map { it.metadata.installationPath.dir("jmods").file("java.base.jmod") },
-                    "!**.jar;!module-info.class"
-                )
-                outJars(base.libsDirectory.file("test-proguarded.jar"))
+                addInput { classpath.from(tasks.jar) }
+                addOutput { archiveFile.set(base.libsDirectory.file("test-proguarded.jar")) }
+                jdkModules.add("java.base")
                 mappingFile.set(layout.buildDirectory.file("test-mapping.txt"))
                 rules.add("-keep class test.Main { public static void main(java.lang.String[]); }")
             }
