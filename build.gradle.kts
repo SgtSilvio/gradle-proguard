@@ -2,6 +2,7 @@
 plugins {
     `kotlin-dsl`
     alias(libs.plugins.plugin.publish)
+    alias(libs.plugins.defaults)
     alias(libs.plugins.metadata)
 }
 
