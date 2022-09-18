@@ -4,7 +4,6 @@ import java.io.OutputStream
 
 private const val CR = '\r'.toByte()
 private const val LF = '\n'.toByte()
-private val EMPTY = byteArrayOf()
 
 /**
  * Interprets an output stream as UTF-8 strings.
@@ -12,7 +11,7 @@ private val EMPTY = byteArrayOf()
  */
 internal class LineOutputStream(private val consumer: (String) -> Unit) : OutputStream() {
 
-    private var buffer: ByteArray = EMPTY
+    private val buffer = ByteStringBuilder()
     private var lastCR = false
 
     override fun write(b: Int) = write(byteArrayOf(b.toByte()))
@@ -31,13 +30,13 @@ internal class LineOutputStream(private val consumer: (String) -> Unit) : Output
             when (b[i]) {
                 LF -> {
                     if (!lastCR) {
-                        consume(buffer.append(b, start, i))
+                        consumer.invoke(buffer.toString(b, start, i))
                     }
                     start = i + 1
                     lastCR = false
                 }
                 CR -> {
-                    consume(buffer.append(b, start, i))
+                    consumer.invoke(buffer.toString(b, start, i))
                     start = i + 1
                     lastCR = true
                 }
@@ -47,27 +46,44 @@ internal class LineOutputStream(private val consumer: (String) -> Unit) : Output
             }
             i++
         }
-        buffer = buffer.append(b, start, end)
+        buffer.append(b, start, end)
     }
 
     override fun close() {
-        if (buffer.isNotEmpty()) {
-            consume(buffer)
+        if (buffer.size > 0) {
+            consumer.invoke(buffer.toString())
         }
-    }
-
-    private fun consume(b: ByteArray) {
-        consumer.invoke(String(b, Charsets.UTF_8))
-        buffer = EMPTY
     }
 }
 
-private fun ByteArray.append(other: ByteArray, fromIndex: Int, toIndex: Int) : ByteArray {
-    val otherSize = toIndex - fromIndex
-    if (otherSize == 0) {
-        return this
+private class ByteStringBuilder {
+
+    private var buffer = ByteArray(0)
+    private var _size = 0
+    val size get() = _size
+
+    fun append(b: ByteArray, fromIndex: Int, toIndex: Int) {
+        val additionalSize = toIndex - fromIndex
+        if (additionalSize == 0) {
+            return
+        }
+        val currentSize = _size
+        val newSize = currentSize + additionalSize
+        if (newSize > buffer.size) {
+            buffer = buffer.copyOf(newSize)
+        }
+        System.arraycopy(b, fromIndex, buffer, currentSize, additionalSize)
+        _size = newSize
     }
-    val result = copyOf(size + otherSize)
-    System.arraycopy(other, fromIndex, result, size, otherSize)
-    return result
+
+    fun toString(b: ByteArray, fromIndex: Int, toIndex: Int): String {
+        return if (_size == 0) {
+            String(b, fromIndex, toIndex - fromIndex, Charsets.UTF_8)
+        } else {
+            append(b, fromIndex, toIndex)
+            toString()
+        }
+    }
+
+    override fun toString() = String(buffer, 0, _size, Charsets.UTF_8).also { _size = 0 }
 }
