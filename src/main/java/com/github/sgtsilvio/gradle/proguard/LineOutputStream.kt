@@ -1,10 +1,10 @@
 package com.github.sgtsilvio.gradle.proguard
 
 import java.io.OutputStream
-import java.nio.charset.StandardCharsets
 
 private const val CR = '\r'.toByte()
 private const val LF = '\n'.toByte()
+private val EMPTY = byteArrayOf()
 
 /**
  * Interprets an output stream as UTF-8 strings.
@@ -12,7 +12,7 @@ private const val LF = '\n'.toByte()
  */
 internal class LineOutputStream(private val consumer: (String) -> Unit) : OutputStream() {
 
-    private val stringBuilder = StringBuilder()
+    private var buffer: ByteArray = EMPTY
     private var lastCR = false
 
     override fun write(b: Int) = write(byteArrayOf(b.toByte()))
@@ -31,15 +31,13 @@ internal class LineOutputStream(private val consumer: (String) -> Unit) : Output
             when (b[i]) {
                 LF -> {
                     if (!lastCR) {
-                        stringBuilder.append(asString(b, start, i))
-                        consume()
+                        consume(buffer.append(b, start, i))
                     }
                     start = i + 1
                     lastCR = false
                 }
                 CR -> {
-                    stringBuilder.append(asString(b, start, i))
-                    consume()
+                    consume(buffer.append(b, start, i))
                     start = i + 1
                     lastCR = true
                 }
@@ -49,22 +47,27 @@ internal class LineOutputStream(private val consumer: (String) -> Unit) : Output
             }
             i++
         }
-        stringBuilder.append(asString(b, start, end))
+        buffer = buffer.append(b, start, end)
     }
 
     override fun close() {
-        if (stringBuilder.isNotEmpty()) {
-            consume()
+        if (buffer.isNotEmpty()) {
+            consume(buffer)
         }
     }
 
-    private fun consume() {
-        consumer.invoke(stringBuilder.toString())
-        stringBuilder.delete(0, Int.MAX_VALUE)
+    private fun consume(b: ByteArray) {
+        consumer.invoke(String(b, Charsets.UTF_8))
+        buffer = EMPTY
     }
 }
 
-private fun asString(b: ByteArray, start: Int, end: Int): String {
-    require(start <= end)
-    return if (start == end) "" else String(b, start, end - start, StandardCharsets.UTF_8)
+private fun ByteArray.append(other: ByteArray, fromIndex: Int, toIndex: Int) : ByteArray {
+    val otherSize = toIndex - fromIndex
+    if (otherSize == 0) {
+        return this
+    }
+    val result = copyOf(size + otherSize)
+    System.arraycopy(other, fromIndex, result, size, otherSize)
+    return result
 }
