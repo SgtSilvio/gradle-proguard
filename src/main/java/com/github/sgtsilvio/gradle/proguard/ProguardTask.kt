@@ -72,8 +72,6 @@ abstract class ProguardTask : JavaExec() {
          */
         fun addOutput(action: Action<OutputEntry>) {
             val output = OutputEntry()
-            output.archiveFile.builtBy(this@ProguardTask)
-            output.directory.builtBy(this@ProguardTask)
             outputs.add(output)
             action.execute(output)
         }
@@ -99,14 +97,14 @@ abstract class ProguardTask : JavaExec() {
          */
         @get:Optional
         @get:OutputFile
-        val archiveFile = objectFactory.fileProperty()
+        val archiveFile = objectFactory.fileProperty().builtBy(this@ProguardTask)
 
         /**
          * Mutually exclusive with [archiveFile], exactly one must be set.
          */
         @get:Optional
         @get:OutputDirectory
-        val directory = objectFactory.directoryProperty()
+        val directory = objectFactory.directoryProperty().builtBy(this@ProguardTask)
 
         @get:Internal
         internal val archiveFileOrDirectory get() = archiveFile.map<FileSystemLocation> { it }.orElse(directory)
