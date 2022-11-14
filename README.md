@@ -1,6 +1,8 @@
 # Gradle ProGuard Plugin
 
 [![Gradle Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/com.github.sgtsilvio.gradle.proguard?color=brightgreen&style=for-the-badge)](https://plugins.gradle.org/plugin/com.github.sgtsilvio.gradle.proguard)
+[![GitHub](https://img.shields.io/github/license/sgtsilvio/gradle-proguard?color=brightgreen&style=for-the-badge)](LICENSE)
+[![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/sgtsilvio/gradle-proguard/CI%20Check/master?style=for-the-badge)](https://github.com/SgtSilvio/gradle-proguard/actions/workflows/check.yml?query=branch%3Amaster)
 
 Gradle plugin to ease using ProGuard.
 
