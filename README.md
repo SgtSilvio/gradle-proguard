@@ -7,6 +7,7 @@
 Gradle plugin to ease using ProGuard.
 
 This implementation differs from the official ProGuard gradle plugin in the following points:
+
 - ProGuard and the Gradle daemon are decoupled:
   - How: Runs ProGuard in a separate process (via the command line interface) instead of in the Gradle daemon
   - Why: ProGuard tends to use a lot of memory which can expire the daemon or even require increasing its heap.
@@ -28,7 +29,14 @@ This implementation differs from the official ProGuard gradle plugin in the foll
 
 ```kotlin
 plugins {
+    java
     id("com.github.sgtsilvio.gradle.proguard") version "0.4.0"
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
 }
 
 //...
@@ -79,6 +87,9 @@ can be used to configure the ProGuard process.
 ```kotlin
 val proguardJar by tasks.registering(proguard.taskClass) {
     //...
+    javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    })
     maxHeapSize = "2G"
 }
 ```
