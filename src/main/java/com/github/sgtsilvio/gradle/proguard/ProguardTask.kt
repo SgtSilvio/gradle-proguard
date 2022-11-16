@@ -61,7 +61,7 @@ abstract class ProguardTask : JavaExec() {
         /**
          * Adds a new input entry to this group of inputs and outputs and configures it.
          */
-        fun addInput(action: Action<InputEntry>) {
+        fun addInput(action: Action<in InputEntry>) {
             val input = InputEntry()
             inputs.add(input)
             action.execute(input)
@@ -70,7 +70,7 @@ abstract class ProguardTask : JavaExec() {
         /**
          * Adds a new output entry to this group of inputs and outputs and configures it.
          */
-        fun addOutput(action: Action<OutputEntry>) {
+        fun addOutput(action: Action<in OutputEntry>) {
             val output = OutputEntry()
             outputs.add(output)
             action.execute(output)
@@ -257,17 +257,17 @@ abstract class ProguardTask : JavaExec() {
     /**
      * Adds a new input entry to the first group of inputs and outputs and configures it.
      */
-    fun addInput(action: Action<InputEntry>) = inputOutputGroups[0].addInput(action)
+    fun addInput(action: Action<in InputEntry>) = inputOutputGroups[0].addInput(action)
 
     /**
      * Adds a new output entry to the first group of inputs and outputs and configures it.
      */
-    fun addOutput(action: Action<OutputEntry>) = inputOutputGroups[0].addOutput(action)
+    fun addOutput(action: Action<in OutputEntry>) = inputOutputGroups[0].addOutput(action)
 
     /**
      * Adds a new group of inputs and outputs and configures it.
      */
-    fun addInputOutputGroup(action: Action<InputOutputGroup>) {
+    fun addInputOutputGroup(action: Action<in InputOutputGroup>) {
         val inputOutputGroup = InputOutputGroup()
         inputOutputGroups.add(inputOutputGroup)
         action.execute(inputOutputGroup)
@@ -276,7 +276,7 @@ abstract class ProguardTask : JavaExec() {
     /**
      * Adds a new library entry and configures it.
      */
-    fun addLibrary(action: Action<LibraryEntry>) {
+    fun addLibrary(action: Action<in LibraryEntry>) {
         val library = LibraryEntry()
         libraries.add(library)
         action.execute(library)
