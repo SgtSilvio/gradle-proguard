@@ -36,24 +36,21 @@ repositories {
 }
 
 gradlePlugin {
+    website.set(metadata.url)
+    vcsUrl.set(metadata.scm.get().url)
     plugins {
         create("proguard") {
             id = "$group.$name"
+            implementationClass = "$group.$name.ProguardPlugin"
             displayName = metadata.readableName.get()
             description = project.description
-            implementationClass = "$group.$name.ProguardPlugin"
+            tags.set(listOf("proguard", "obfuscation"))
         }
     }
 }
 
-pluginBundle {
-    website = metadata.url.get()
-    vcsUrl = metadata.scm.get().url.get()
-    tags = listOf("proguard", "obfuscation")
-}
-
 testing {
     suites.named<JvmTestSuite>("test") {
-        useJUnitJupiter(libs.versions.junit.jupiter.get())
+        useJUnitJupiter(libs.versions.junit.jupiter)
     }
 }
