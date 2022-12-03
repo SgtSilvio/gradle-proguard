@@ -10,7 +10,7 @@ import java.io.File
 /**
  * @author Silvio Giebl
  */
-class ConfigurationCacheTest {
+internal class ConfigurationCacheTest {
 
     @Test
     fun configurationCacheReused(@TempDir projectDir: File) {

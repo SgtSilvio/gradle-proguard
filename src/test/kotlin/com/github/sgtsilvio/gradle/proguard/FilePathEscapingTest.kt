@@ -10,7 +10,7 @@ import java.io.File
 /**
  * @author Silvio Giebl
  */
-class FilePathEscapingTest {
+internal class FilePathEscapingTest {
 
     @Test
     fun spaceAndParenthesisAreEscaped(@TempDir tempDir: File) {
