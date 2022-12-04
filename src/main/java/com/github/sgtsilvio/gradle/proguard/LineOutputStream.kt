@@ -59,25 +59,25 @@ internal class LineOutputStream(private val consumer: (String) -> Unit) : Output
 private class ByteStringBuilder {
 
     private var buffer = ByteArray(0)
-    private var _size = 0
-    val size get() = _size
+    var size = 0
+        private set
 
     fun append(b: ByteArray, fromIndex: Int, toIndex: Int) {
         val additionalSize = toIndex - fromIndex
         if (additionalSize == 0) {
             return
         }
-        val currentSize = _size
+        val currentSize = size
         val newSize = currentSize + additionalSize
         if (newSize > buffer.size) {
             buffer = buffer.copyOf(newSize)
         }
         System.arraycopy(b, fromIndex, buffer, currentSize, additionalSize)
-        _size = newSize
+        size = newSize
     }
 
     fun toString(b: ByteArray, fromIndex: Int, toIndex: Int): String {
-        return if (_size == 0) {
+        return if (size == 0) {
             String(b, fromIndex, toIndex - fromIndex, Charsets.UTF_8)
         } else {
             append(b, fromIndex, toIndex)
@@ -85,5 +85,5 @@ private class ByteStringBuilder {
         }
     }
 
-    override fun toString() = String(buffer, 0, _size, Charsets.UTF_8).also { _size = 0 }
+    override fun toString() = String(buffer, 0, size, Charsets.UTF_8).also { size = 0 }
 }
