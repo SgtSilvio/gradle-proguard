@@ -2,9 +2,8 @@ package com.github.sgtsilvio.gradle.proguard
 
 import org.gradle.api.Action
 import org.gradle.api.GradleException
-import org.gradle.api.file.FileCollection
-import org.gradle.api.file.FileSystemLocation
-import org.gradle.api.file.RegularFile
+import org.gradle.api.file.*
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.*
 import org.gradle.kotlin.dsl.get
@@ -82,13 +81,13 @@ abstract class ProguardTask : JavaExec() {
          * Can contain archive files and/or directories.
          */
         @get:Classpath
-        val classpath = objectFactory.fileCollection()
+        val classpath: ConfigurableFileCollection = objectFactory.fileCollection()
 
         /**
          * Glob style filters for the files in [InputEntry.classpath].
          */
         @get:Input
-        val filter = objectFactory.property<String>().convention("")
+        val filter: Property<String> = objectFactory.property<String>().convention("")
     }
 
     inner class OutputEntry {
@@ -97,23 +96,24 @@ abstract class ProguardTask : JavaExec() {
          */
         @get:Optional
         @get:OutputFile
-        val archiveFile = objectFactory.fileProperty().builtBy(this@ProguardTask)
+        val archiveFile: RegularFileProperty = objectFactory.fileProperty().builtBy(this@ProguardTask)
 
         /**
          * Mutually exclusive with [archiveFile], exactly one must be set.
          */
         @get:Optional
         @get:OutputDirectory
-        val directory = objectFactory.directoryProperty().builtBy(this@ProguardTask)
+        val directory: DirectoryProperty = objectFactory.directoryProperty().builtBy(this@ProguardTask)
 
         @get:Internal
-        internal val archiveFileOrDirectory get() = archiveFile.map<FileSystemLocation> { it }.orElse(directory)
+        internal val archiveFileOrDirectory: Provider<FileSystemLocation>
+            get() = archiveFile.map<FileSystemLocation> { it }.orElse(directory)
 
         /**
          * Glob style filters for the files in [archiveFile] or [directory].
          */
         @get:Input
-        val filter = objectFactory.property<String>().convention("")
+        val filter: Property<String> = objectFactory.property<String>().convention("")
     }
 
     /**
@@ -127,13 +127,13 @@ abstract class ProguardTask : JavaExec() {
          * Can contain archive files and/or directories.
          */
         @get:Classpath
-        val classpath = objectFactory.fileCollection()
+        val classpath: ConfigurableFileCollection = objectFactory.fileCollection()
 
         /**
          * Glob style filters for the files in [LibraryEntry.classpath].
          */
         @get:Input
-        val filter = objectFactory.property<String>().convention("")
+        val filter: Property<String> = objectFactory.property<String>().convention("")
     }
 
     /**
@@ -164,7 +164,7 @@ abstract class ProguardTask : JavaExec() {
      */
     @get:InputFiles
     @get:PathSensitive(PathSensitivity.NONE)
-    val rulesFiles = objectFactory.fileCollection()
+    val rulesFiles: ConfigurableFileCollection = objectFactory.fileCollection()
 
     /**
      * List of rules directly specified in the Gradle configuration passed 1-to-1 to ProGuard.
@@ -180,7 +180,7 @@ abstract class ProguardTask : JavaExec() {
     @get:Optional
     @get:InputFile
     @get:PathSensitive(PathSensitivity.NONE)
-    val mappingInputFile = objectFactory.fileProperty()
+    val mappingInputFile: RegularFileProperty = objectFactory.fileProperty()
 
     /**
      * Passed as `-obfuscationdictionary` argument to ProGuard.
@@ -188,7 +188,7 @@ abstract class ProguardTask : JavaExec() {
     @get:Optional
     @get:InputFile
     @get:PathSensitive(PathSensitivity.NONE)
-    val obfuscationDictionary = objectFactory.fileProperty()
+    val obfuscationDictionary: RegularFileProperty = objectFactory.fileProperty()
 
     /**
      * Passed as `-classobfuscationdictionary` argument to ProGuard.
@@ -196,7 +196,7 @@ abstract class ProguardTask : JavaExec() {
     @get:Optional
     @get:InputFile
     @get:PathSensitive(PathSensitivity.NONE)
-    val classObfuscationDictionary = objectFactory.fileProperty()
+    val classObfuscationDictionary: RegularFileProperty = objectFactory.fileProperty()
 
     /**
      * Passed as `-packageobfuscationdictionary` argument to ProGuard.
@@ -204,42 +204,42 @@ abstract class ProguardTask : JavaExec() {
     @get:Optional
     @get:InputFile
     @get:PathSensitive(PathSensitivity.NONE)
-    val packageObfuscationDictionary = objectFactory.fileProperty()
+    val packageObfuscationDictionary: RegularFileProperty = objectFactory.fileProperty()
 
     /**
      * Passed as `-printconfiguration` argument to ProGuard.
      */
     @get:Optional
     @get:OutputFile
-    val configurationFile = objectFactory.fileProperty()
+    val configurationFile: RegularFileProperty = objectFactory.fileProperty()
 
     /**
      * Passed as `-printmapping` argument to ProGuard.
      */
     @get:Optional
     @get:OutputFile
-    val mappingFile = objectFactory.fileProperty()
+    val mappingFile: RegularFileProperty = objectFactory.fileProperty()
 
     /**
      * Passed as `-printseeds` argument to ProGuard.
      */
     @get:Optional
     @get:OutputFile
-    val seedsFile = objectFactory.fileProperty()
+    val seedsFile: RegularFileProperty = objectFactory.fileProperty()
 
     /**
      * Passed as `-printusage` argument to ProGuard.
      */
     @get:Optional
     @get:OutputFile
-    val usageFile = objectFactory.fileProperty()
+    val usageFile: RegularFileProperty = objectFactory.fileProperty()
 
     /**
      * Passed as `-dump` argument to ProGuard.
      */
     @get:Optional
     @get:OutputFile
-    val dumpFile = objectFactory.fileProperty()
+    val dumpFile: RegularFileProperty = objectFactory.fileProperty()
 
     /**
      * Passed as `-libraryjars` arguments to ProGuard.
