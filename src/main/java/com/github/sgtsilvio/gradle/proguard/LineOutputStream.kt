@@ -2,8 +2,8 @@ package com.github.sgtsilvio.gradle.proguard
 
 import java.io.OutputStream
 
-private const val CR = '\r'.toByte()
-private const val LF = '\n'.toByte()
+private const val CR = '\r'.code.toByte()
+private const val LF = '\n'.code.toByte()
 
 /**
  * Interprets an output stream as UTF-8 strings.
