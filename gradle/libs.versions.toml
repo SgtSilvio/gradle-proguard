@@ -2,6 +2,6 @@
 junit-jupiter = "5.9.1"
 
 [plugins]
-plugin-publish = { id = "com.gradle.plugin-publish", version = "1.1.0" }
+plugin-publish = { id = "com.gradle.plugin-publish", version = "1.2.0" }
 defaults = { id = "io.github.sgtsilvio.gradle.defaults", version = "0.2.0" }
 metadata = { id = "com.github.sgtsilvio.gradle.metadata", version = "0.4.0" }
