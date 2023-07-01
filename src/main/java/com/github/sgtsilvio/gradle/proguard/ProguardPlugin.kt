@@ -36,7 +36,7 @@ class ProguardPlugin : Plugin<Project> {
             isVisible = false
 
             defaultDependencies {
-                add(project.dependencies.create("com.guardsquare:proguard-base:7.2.2"))
+                add(project.dependencies.create("com.guardsquare:proguard-base:7.3.2"))
             }
         }
 
