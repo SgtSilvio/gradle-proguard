@@ -24,6 +24,7 @@ import org.gradle.kotlin.dsl.withType
  *
  * @author Silvio Giebl
  */
+@Suppress("unused")
 class ProguardPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
