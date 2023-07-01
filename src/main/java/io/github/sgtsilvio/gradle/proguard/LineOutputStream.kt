@@ -1,4 +1,4 @@
-package com.github.sgtsilvio.gradle.proguard
+package io.github.sgtsilvio.gradle.proguard
 
 import java.io.OutputStream
 

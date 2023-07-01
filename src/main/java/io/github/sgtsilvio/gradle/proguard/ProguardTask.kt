@@ -1,4 +1,4 @@
-package com.github.sgtsilvio.gradle.proguard
+package io.github.sgtsilvio.gradle.proguard
 
 import org.gradle.api.Action
 import org.gradle.api.GradleException
