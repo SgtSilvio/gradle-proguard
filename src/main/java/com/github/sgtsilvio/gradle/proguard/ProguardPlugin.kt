@@ -26,11 +26,6 @@ import org.gradle.kotlin.dsl.withType
  */
 class ProguardPlugin : Plugin<Project> {
 
-    companion object {
-        const val EXTENSION_NAME = "proguard"
-        const val CONFIGURATION_NAME = "proguardClasspath"
-    }
-
     override fun apply(project: Project) {
         project.extensions.create(EXTENSION_NAME, ProguardExtension::class)
 
@@ -53,3 +48,6 @@ class ProguardPlugin : Plugin<Project> {
         }
     }
 }
+
+const val EXTENSION_NAME = "proguard"
+const val CONFIGURATION_NAME = "proguardClasspath"

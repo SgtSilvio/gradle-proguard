@@ -248,7 +248,7 @@ abstract class ProguardTask : JavaExec() {
     val jdkModules = objectFactory.listProperty<String>()
 
     init {
-        classpath = project.configurations[ProguardPlugin.CONFIGURATION_NAME]
+        classpath = project.configurations[CONFIGURATION_NAME]
         mainClass.set("proguard.ProGuard")
         argumentProviders += ArgumentProvider()
         addInputOutputGroup {}
