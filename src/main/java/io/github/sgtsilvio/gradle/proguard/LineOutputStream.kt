@@ -30,13 +30,13 @@ internal class LineOutputStream(private val consumer: (String) -> Unit) : Output
             when (b[i]) {
                 LF -> {
                     if (!lastCR) {
-                        consumer.invoke(buffer.toString(b, start, i))
+                        consumer(buffer.toString(b, start, i))
                     }
                     start = i + 1
                     lastCR = false
                 }
                 CR -> {
-                    consumer.invoke(buffer.toString(b, start, i))
+                    consumer(buffer.toString(b, start, i))
                     start = i + 1
                     lastCR = true
                 }
@@ -51,7 +51,7 @@ internal class LineOutputStream(private val consumer: (String) -> Unit) : Output
 
     override fun close() {
         if (buffer.size > 0) {
-            consumer.invoke(buffer.toString())
+            consumer(buffer.toString())
         }
     }
 }
