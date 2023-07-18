@@ -1,4 +1,4 @@
-package io.github.sgtsilvio.gradle
+package io.github.sgtsilvio.gradle.proguard
 
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
