@@ -7,10 +7,10 @@ plugins {
 }
 
 group = "io.github.sgtsilvio.gradle"
-description = "Gradle plugin to ease using ProGuard"
 
 metadata {
     readableName = "Gradle ProGuard Plugin"
+    description = "Gradle plugin to ease using ProGuard"
     license {
         apache2()
     }
