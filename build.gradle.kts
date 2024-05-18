@@ -36,14 +36,10 @@ repositories {
 }
 
 gradlePlugin {
-    website = metadata.url
-    vcsUrl = metadata.scm.get().url
     plugins {
         create("proguard") {
             id = "$group.$name"
             implementationClass = "$group.$name.ProguardPlugin"
-            displayName = metadata.readableName.get()
-            description = project.description
             tags = listOf("proguard", "obfuscation")
         }
     }
