@@ -11,7 +11,8 @@ private const val LF = '\n'.code.toByte()
  */
 internal class LineOutputStream(private val consumer: (String) -> Unit) : OutputStream() {
 
-    private val buffer = ByteStringBuilder()
+    private var buffer = ByteArray(0)
+    private var bufferSize = 0
     private var lastCR = false
 
     override fun write(b: Int) = write(byteArrayOf(b.toByte()))
@@ -27,13 +28,13 @@ internal class LineOutputStream(private val consumer: (String) -> Unit) : Output
             when (b[i]) {
                 LF -> {
                     if (!lastCR) {
-                        consumer(buffer.toString(b, start, i))
+                        consumer(createLine(b, start, i))
                     }
                     start = i + 1
                     lastCR = false
                 }
                 CR -> {
-                    consumer(buffer.toString(b, start, i))
+                    consumer(createLine(b, start, i))
                     start = i + 1
                     lastCR = true
                 }
@@ -43,44 +44,37 @@ internal class LineOutputStream(private val consumer: (String) -> Unit) : Output
             }
             i++
         }
-        buffer.append(b, start, end)
+        appendToBuffer(b, start, end)
     }
 
     override fun close() {
-        if (buffer.size > 0) {
-            consumer(buffer.toString())
+        if (bufferSize > 0) {
+            consumer(createLine())
         }
     }
-}
 
-private class ByteStringBuilder {
-
-    private var buffer = ByteArray(0)
-    var size = 0
-        private set
-
-    fun append(b: ByteArray, fromIndex: Int, toIndex: Int) {
+    private fun appendToBuffer(b: ByteArray, fromIndex: Int, toIndex: Int) {
         val additionalSize = toIndex - fromIndex
         if (additionalSize == 0) {
             return
         }
-        val currentSize = size
+        val currentSize = bufferSize
         val newSize = currentSize + additionalSize
         if (newSize > buffer.size) {
             buffer = buffer.copyOf(newSize)
         }
         System.arraycopy(b, fromIndex, buffer, currentSize, additionalSize)
-        size = newSize
+        bufferSize = newSize
     }
 
-    fun toString(b: ByteArray, fromIndex: Int, toIndex: Int): String {
-        return if (size == 0) {
+    private fun createLine(b: ByteArray, fromIndex: Int, toIndex: Int): String {
+        return if (bufferSize == 0) {
             String(b, fromIndex, toIndex - fromIndex)
         } else {
-            append(b, fromIndex, toIndex)
-            toString()
+            appendToBuffer(b, fromIndex, toIndex)
+            createLine()
         }
     }
 
-    override fun toString() = String(buffer, 0, size).also { size = 0 }
+    private fun createLine() = String(buffer, 0, bufferSize).also { bufferSize = 0 }
 }
