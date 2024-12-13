@@ -6,7 +6,7 @@ private const val CR = '\r'.code.toByte()
 private const val LF = '\n'.code.toByte()
 
 /**
- * Interprets an output stream as UTF-8 strings.
+ * Interprets an output stream as UTF-8 lines.
  * Supports LF, CR LF and CR line endings.
  */
 internal class LineOutputStream(private val consumer: (String) -> Unit) : OutputStream() {
@@ -18,12 +18,9 @@ internal class LineOutputStream(private val consumer: (String) -> Unit) : Output
 
     override fun write(b: ByteArray, off: Int, len: Int) {
         val end = off + len
-
-        require(len >= 0)
-        if ((off < 0) || (off > b.size) || (end < 0) || (end > b.size)) {
+        if ((len < 0) || (off < 0) || (off > b.size) || (end < 0) || (end > b.size)) {
             throw IndexOutOfBoundsException()
         }
-
         var start = off
         var i = off
         while (i < end) {
@@ -78,12 +75,12 @@ private class ByteStringBuilder {
 
     fun toString(b: ByteArray, fromIndex: Int, toIndex: Int): String {
         return if (size == 0) {
-            String(b, fromIndex, toIndex - fromIndex, Charsets.UTF_8)
+            String(b, fromIndex, toIndex - fromIndex)
         } else {
             append(b, fromIndex, toIndex)
             toString()
         }
     }
 
-    override fun toString() = String(buffer, 0, size, Charsets.UTF_8).also { size = 0 }
+    override fun toString() = String(buffer, 0, size).also { size = 0 }
 }
