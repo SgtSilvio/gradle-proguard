@@ -33,7 +33,6 @@ class ProguardPlugin : Plugin<Project> {
         project.configurations.register(CONFIGURATION_NAME) {
             isCanBeResolved = true
             isCanBeConsumed = false
-            isVisible = false
 
             defaultDependencies {
                 add(project.dependencies.create("com.guardsquare:proguard-base:7.6.1"))
