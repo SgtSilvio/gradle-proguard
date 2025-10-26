@@ -318,23 +318,23 @@ abstract class ProguardTask : JavaExec() {
                     }
                 }
                 if (!inJarsAdded) {
-                    throw GradleException("inputOutputGroups.\$$groupIndex.inputs classpath did not contain any files.")
+                    throw GradleException("inputOutputGroups.$$groupIndex.inputs classpath did not contain any files.")
                 }
                 if (inputOutputGroup.outputs.isEmpty() && (inputOutputGroups.size > 1)) {
-                    throw GradleException("inputOutputGroups.\$$groupIndex.outputs are empty although multiple inputOutputGroups are configured.")
+                    throw GradleException("inputOutputGroups.$$groupIndex.outputs are empty although multiple inputOutputGroups are configured.")
                 }
                 for ((outputIndex, output) in inputOutputGroup.outputs.withIndex()) {
                     val archiveFile = output.archiveFile.orNull
                     val directory = output.directory.orNull
                     val filter = output.filter.get()
                     if ((archiveFile != null) && (directory != null)) {
-                        throw GradleException("In inputOutputGroups.\$$groupIndex.outputs.\$$outputIndex both archiveFile and directory have a configured value.")
+                        throw GradleException("In inputOutputGroups.$$groupIndex.outputs.$$outputIndex both archiveFile and directory have a configured value.")
                     } else if (archiveFile != null) {
                         addJarArgument("out", archiveFile.asFile, filter)
                     } else if (directory != null) {
                         addJarArgument("out", directory.asFile, filter)
                     } else {
-                        throw GradleException("In inputOutputGroups.\$$groupIndex.outputs.\$$outputIndex neither archiveFile nor directory have a configured value.")
+                        throw GradleException("In inputOutputGroups.$$groupIndex.outputs.$$outputIndex neither archiveFile nor directory have a configured value.")
                     }
                 }
             }
