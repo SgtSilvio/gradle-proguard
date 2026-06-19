@@ -10,7 +10,7 @@ abstract class ProguardExtension {
      *
      * Use this property instead of the fully qualified class name or an import.
      * ```kotlin
-     * val proguardJar by tasks.registering(proguard.taskClass) {
+     * tasks.register("proguardJar", proguard.taskClass) {
      *     ...
      * }
      * ```

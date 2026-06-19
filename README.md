@@ -41,7 +41,7 @@ java {
 
 //...
 
-val proguardJar by tasks.registering(proguard.taskClass) {
+tasks.register("proguardJar", proguard.taskClass) {
     addInput {
         classpath.from(tasks.shadowJar)
     }
@@ -85,7 +85,7 @@ The ProGuard task class extends Gradle's `JavaExec` task class, so all of its pr
 can be used to configure the ProGuard process.
 
 ```kotlin
-val proguardJar by tasks.registering(proguard.taskClass) {
+tasks.register("proguardJar", proguard.taskClass) {
     //...
     javaLauncher.set(javaToolchains.launcherFor {
         languageVersion.set(JavaLanguageVersion.of(17))

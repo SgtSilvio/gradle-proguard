@@ -36,7 +36,7 @@ internal class FilePathEscapingTest {
                     languageVersion.set(JavaLanguageVersion.of(11))
                 }
             }
-            val proguardJar by tasks.registering(proguard.taskClass) {
+            tasks.register("proguardJar", proguard.taskClass) {
                 addInput { classpath.from(tasks.jar) }
                 addOutput { archiveFile.set(base.libsDirectory.file("test-proguarded.jar")) }
                 jdkModules.add("java.base")

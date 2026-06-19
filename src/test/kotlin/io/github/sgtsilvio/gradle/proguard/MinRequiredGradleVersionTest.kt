@@ -33,7 +33,7 @@ internal class MinRequiredGradleVersionTest {
                     languageVersion.set(JavaLanguageVersion.of(11))
                 }
             }
-            val proguardJar by tasks.registering(proguard.taskClass) {
+            val proguardJar = tasks.register("proguardJar", proguard.taskClass) {
                 addInput { classpath.from(tasks.jar) }
                 addOutput { archiveFile.set(base.libsDirectory.file("test-proguarded.jar")) }
                 jdkModules.add("java.base")
@@ -41,7 +41,7 @@ internal class MinRequiredGradleVersionTest {
                 rules.add("-keep class test.Main { public static void main(java.lang.String[]); }")
             }
             // copy inJars, libraryJars, outJars to check if they are compatible with the configuration cache
-            val copyProguardJars by tasks.registering(Copy::class) {
+            tasks.register("copyProguardJars", Copy::class) {
                 from(proguardJar.map { it.inputClasspath }) { into("inJars") }
                 from(proguardJar.map { it.outputClasspath }) { into("outJars") }
                 from(proguardJar.map { it.libraryClasspath }) { into("libraryJars") }

@@ -17,7 +17,7 @@ import org.gradle.kotlin.dsl.withType
  * Registers the `proguard` extension and the `proguardClasspath` configuration.
  * You can then register [ProguardTask]s.
  * ```kotlin
- * val proguardJar by tasks.registering(proguard.taskClass) {
+ * tasks.register("proguardJar", proguard.taskClass) {
  *     ...
  * }
  * ```
