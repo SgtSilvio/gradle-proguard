@@ -1,5 +1,7 @@
 package io.github.sgtsilvio.gradle.proguard
 
+import io.github.sgtsilvio.gradle.testkit.addArguments
+import io.github.sgtsilvio.gradle.testkit.withJavaHome
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.Assertions.*
@@ -64,7 +66,8 @@ internal class MinRequiredGradleVersionTest {
             .withGradleVersion("6.7")
             .withProjectDir(projectDir)
             .withPluginClasspath()
-            .withArguments("copyProguardJars")
+            .withJavaHome(System.getProperty("java.home.8"))
+            .addArguments("copyProguardJars")
             .build()
 
         assertFalse(result.output.contains("ProGuard, version")) // stdout should be silenced

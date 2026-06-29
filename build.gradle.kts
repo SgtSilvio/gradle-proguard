@@ -1,4 +1,5 @@
 import org.gradle.plugin.compatibility.compatibility
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
@@ -29,13 +30,20 @@ metadata {
 }
 
 kotlin {
-    jvmToolchain(8)
+    jvmToolchain(21)
 }
 
 tasks.compileKotlin {
     compilerOptions {
+        jvmTarget = JvmTarget.JVM_1_8
         apiVersion = KotlinVersion.KOTLIN_2_0
         languageVersion = KotlinVersion.KOTLIN_2_0
+    }
+}
+
+tasks.compileJava {
+    javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(8)
     }
 }
 
@@ -70,11 +78,13 @@ testing {
             useJUnitJupiter(libs.versions.junit.jupiter)
             targets.configureEach {
                 testTask {
-                    javaLauncher = javaToolchains.launcherFor {
-                        languageVersion = JavaLanguageVersion.of(17)
-                    }
+                    systemProperty("java.home.8", javaHome(8))
                 }
             }
         }
     }
 }
+
+fun javaHome(javaVersion: Int): String =
+    javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(javaVersion) }
+        .get().metadata.installationPath.asFile.absolutePath
