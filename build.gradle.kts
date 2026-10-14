@@ -51,6 +51,10 @@ repositories {
     mavenCentral()
 }
 
+dependencies {
+    implementation(libs.commons.compress)
+}
+
 gradlePlugin {
     plugins {
         create("proguard") {

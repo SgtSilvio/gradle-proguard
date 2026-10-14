@@ -1,5 +1,7 @@
 package io.github.sgtsilvio.gradle.proguard
 
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
+import org.apache.commons.compress.archivers.zip.ZipFile
 import org.gradle.api.Action
 import org.gradle.api.GradleException
 import org.gradle.api.file.FileCollection
@@ -12,6 +14,10 @@ import org.gradle.kotlin.dsl.listProperty
 import org.gradle.kotlin.dsl.property
 import org.gradle.process.CommandLineArgumentProvider
 import java.io.File
+import java.io.RandomAccessFile
+import java.util.Calendar
+import java.util.GregorianCalendar
+import kotlin.io.path.moveTo
 
 /**
  * Gradle task type to define ProGuard tasks.
@@ -94,6 +100,9 @@ abstract class ProguardTask : JavaExec() {
     inner class OutputEntry {
         /**
          * Mutually exclusive with [directory], exactly one must be set.
+         *
+         * All entries of the archive get the same constant time that Gradle uses for reproducible archives. The entries
+         * of archives nested in the archive and the entries of jmod files keep the times written by ProGuard.
          */
         @get:Optional
         @get:OutputFile
@@ -287,6 +296,16 @@ abstract class ProguardTask : JavaExec() {
         standardOutput = LineOutputStream { logger.info(it) }
         errorOutput = LineOutputStream { logger.error(it) }
         super.exec()
+        // with isIgnoreExitValue, a failed ProGuard run can leave incomplete output archives
+        if (executionResult.get().exitValue != 0) {
+            return
+        }
+        for (output in inputOutputGroups.flatMap { it.outputs }) {
+            val archiveFile = output.archiveFile.orNull?.asFile ?: continue
+            if (archiveFile.isZipArchive()) {
+                normalizeTimestamps(archiveFile, temporaryDir)
+            }
+        }
     }
 
     private inner class ArgumentProvider : CommandLineArgumentProvider {
@@ -371,4 +390,41 @@ abstract class ProguardTask : JavaExec() {
             return arguments
         }
     }
+}
+
+/**
+ * The signature of a local file header, which a zip archive starts with.
+ */
+private const val ZIP_LOCAL_FILE_HEADER_SIGNATURE = 0x504B0304
+
+/**
+ * The time Gradle uses for archive entries if file timestamps are not preserved (1980-02-01 00:00 local time).
+ */
+private val CONSTANT_TIME_FOR_ZIP_ENTRIES = GregorianCalendar(1980, Calendar.FEBRUARY, 1, 0, 0, 0).timeInMillis
+
+/**
+ * Checks whether the file starts with [ZIP_LOCAL_FILE_HEADER_SIGNATURE].
+ *
+ * ProGuard does not create an output archive that receives no entries, writes a directory for an output name without
+ * an archive extension, and writes jmod files that start with their own header.
+ */
+private fun File.isZipArchive() =
+    isFile && (length() >= 4) && RandomAccessFile(this, "r").use { it.readInt() } == ZIP_LOCAL_FILE_HEADER_SIGNATURE
+
+/**
+ * Sets the time of all entries of the archive to [CONSTANT_TIME_FOR_ZIP_ENTRIES].
+ *
+ * ProGuard stamps every entry with the current time, so without this, identical inputs produce different archives.
+ */
+private fun normalizeTimestamps(archiveFile: File, temporaryDir: File) {
+    val normalizedArchiveFile = temporaryDir.resolve(archiveFile.name)
+    ZipFile.builder().setFile(archiveFile).get().use { zipFile ->
+        ZipArchiveOutputStream(normalizedArchiveFile).use { outputStream ->
+            for (entry in zipFile.entries) {
+                entry.time = CONSTANT_TIME_FOR_ZIP_ENTRIES
+                outputStream.addRawArchiveEntry(entry, zipFile.getRawInputStream(entry))
+            }
+        }
+    }
+    normalizedArchiveFile.toPath().moveTo(archiveFile.toPath(), overwrite = true)
 }
