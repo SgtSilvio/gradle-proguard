@@ -110,6 +110,8 @@ abstract class ProguardTask : JavaExec() {
 
         /**
          * Mutually exclusive with [archiveFile], exactly one must be set.
+         *
+         * The archives that ProGuard writes into the directory for the input archives are handled like [archiveFile].
          */
         @get:Optional
         @get:OutputDirectory
@@ -300,10 +302,25 @@ abstract class ProguardTask : JavaExec() {
         if (executionResult.get().exitValue != 0) {
             return
         }
-        for (output in inputOutputGroups.flatMap { it.outputs }) {
-            val archiveFile = output.archiveFile.orNull?.asFile ?: continue
-            if (archiveFile.isZipArchive()) {
-                normalizeTimestamps(archiveFile, temporaryDir)
+        for (inputOutputGroup in inputOutputGroups) {
+            for (output in inputOutputGroup.outputs) {
+                // mapped output properties can not be queried before the task completed
+                val archiveFile = output.archiveFile.orNull?.asFile
+                val outputArchiveFiles = if (archiveFile != null) {
+                    listOf(archiveFile)
+                } else {
+                    // ProGuard writes each input archive into the output directory under the name of the input archive
+                    val directory = output.directory.orNull?.asFile ?: continue
+                    inputOutputGroup.inputs.flatMap { it.classpath.files }
+                        .filter { it.isFile }
+                        .map { directory.resolve(it.name) }
+                        .distinct()
+                }
+                for (outputArchiveFile in outputArchiveFiles) {
+                    if (outputArchiveFile.isZipArchive()) {
+                        normalizeTimestamps(outputArchiveFile, temporaryDir)
+                    }
+                }
             }
         }
     }
