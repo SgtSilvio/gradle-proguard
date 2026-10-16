@@ -35,7 +35,7 @@ class ProguardPlugin : Plugin<Project> {
             isCanBeConsumed = false
 
             defaultDependencies {
-                add(project.dependencies.create("com.guardsquare:proguard-base:7.8.2"))
+                add(project.dependencies.create("com.guardsquare:proguard-base:7.10.0"))
             }
         }
 
